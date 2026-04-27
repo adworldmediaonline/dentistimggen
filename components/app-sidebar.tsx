@@ -15,7 +15,18 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { LayoutDashboardIcon, UsersIcon, ShieldCheckIcon, Settings2Icon, CircleHelpIcon, SearchIcon, DatabaseIcon, FileChartColumnIcon, FileIcon, ScanSearchIcon } from "lucide-react"
+import {
+  CircleHelpIcon,
+  FileChartColumnIcon,
+  FileIcon,
+  ImagePlusIcon,
+  LayoutDashboardIcon,
+  ScanSearchIcon,
+  SearchIcon,
+  Settings2Icon,
+  ShieldCheckIcon,
+  UsersIcon,
+} from "lucide-react"
 
 const data = {
   navMain: [
@@ -32,6 +43,14 @@ const data = {
       url: "/dashboard#users",
       icon: (
         <UsersIcon
+        />
+      ),
+    },
+    {
+      title: "Before & after",
+      url: "/dashboard/before-after",
+      icon: (
+        <ImagePlusIcon
         />
       ),
     },
@@ -73,9 +92,9 @@ const data = {
   documents: [
     {
       name: "Image reviews",
-      url: "/dashboard#reviews",
+      url: "/dashboard/before-after",
       icon: (
-        <DatabaseIcon
+        <ImagePlusIcon
         />
       ),
     },
