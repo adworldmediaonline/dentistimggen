@@ -6,7 +6,6 @@ import {
   PlugZapIcon,
   RotateCcwIcon,
   ShieldAlertIcon,
-  SparklesIcon,
   UploadIcon,
 } from "lucide-react"
 import Image from "next/image"
@@ -24,7 +23,6 @@ import {
 } from "@/components/ui/card"
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -112,7 +110,7 @@ function buildPrompt(goal: TreatmentGoal, notes: string) {
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number) {
   return new Promise<T>((resolve, reject) => {
     const timeout = window.setTimeout(() => {
-      reject(new Error("Puter is taking too long to respond. Please retry in a moment."))
+      reject(new Error("The preview is taking too long. Please retry in a moment."))
     }, timeoutMs)
 
     promise
@@ -124,6 +122,22 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number) {
 
 function getPuter() {
   return window.puter
+}
+
+function getPreviewErrorMessage(error: unknown, fallback: string) {
+  if (!(error instanceof Error) || !error.message) {
+    return fallback
+  }
+
+  return error.message
+    .replaceAll("Puter", "workspace")
+    .replaceAll("puter", "workspace")
+    .replaceAll("AI-generated", "created")
+    .replaceAll("AI generated", "created")
+    .replaceAll("AI", "preview")
+    .replaceAll("generated", "created")
+    .replaceAll("generation", "preview")
+    .replaceAll("generate", "create")
 }
 
 export function BeforeAfterGenerator() {
@@ -172,11 +186,11 @@ export function BeforeAfterGenerator() {
     setIsPuterSignedIn(Boolean(puter?.auth?.isSignedIn?.()))
   }
 
-  async function connectPuter() {
+  async function connectPreviewService() {
     const puter = getPuter()
 
     if (!puter?.auth?.signIn) {
-      setError("Puter is still loading. Please try again in a moment.")
+      setError("Workspace setup is still loading. Please try again in a moment.")
       return
     }
 
@@ -187,12 +201,12 @@ export function BeforeAfterGenerator() {
       await puter.auth.signIn()
       syncPuterStatus()
     } catch (connectError) {
-      const message =
-        connectError instanceof Error
-          ? connectError.message
-          : "Puter authorization was cancelled or failed."
-
-      setError(message)
+      setError(
+        getPreviewErrorMessage(
+          connectError,
+          "Workspace setup was cancelled or failed."
+        )
+      )
     } finally {
       setGenerationPhase("idle")
     }
@@ -232,7 +246,7 @@ export function BeforeAfterGenerator() {
     setSelectedFileName(file.name)
   }
 
-  async function generateAfterImage() {
+  async function createAfterPreview() {
     const puter = getPuter()
 
     if (!beforeImageBase64 || !beforeImageMimeType) {
@@ -241,12 +255,12 @@ export function BeforeAfterGenerator() {
     }
 
     if (!puter?.ai?.txt2img || !puter.auth) {
-      setError("Puter is still loading. Please try again in a moment.")
+      setError("Workspace setup is still loading. Please try again in a moment.")
       return
     }
 
     if (!puter.auth.isSignedIn?.()) {
-      setError("Connect Puter first, then generate the after image.")
+      setError("Complete workspace setup first.")
       setIsPuterSignedIn(false)
       return
     }
@@ -269,12 +283,7 @@ export function BeforeAfterGenerator() {
       setGenerationPhase("finalizing")
       setAfterImageUrl(image.src)
     } catch (generationError) {
-      const message =
-        generationError instanceof Error
-          ? generationError.message
-          : "The Puter image generation request failed."
-
-      setError(message)
+      setError(getPreviewErrorMessage(generationError, "The preview could not be created."))
     } finally {
       setGenerationPhase("idle")
     }
@@ -304,7 +313,7 @@ export function BeforeAfterGenerator() {
         src="https://js.puter.com/v2/"
         strategy="afterInteractive"
         onReady={syncPuterStatus}
-        onError={() => setError("Could not load Puter.js. Check the network and try again.")}
+        onError={() => setError("Could not load workspace setup. Check the network and try again.")}
       />
 
       <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
@@ -312,41 +321,36 @@ export function BeforeAfterGenerator() {
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <CardTitle>Generate after-treatment image</CardTitle>
-                <CardDescription>
-                  Use Puter AI to generate the after image from the uploaded before image.
-                </CardDescription>
+                <CardTitle>After-treatment preview</CardTitle>
+                <CardDescription>Upload an image, choose a style, and create a review preview.</CardDescription>
               </div>
               <Badge variant={isPuterSignedIn ? "secondary" : "outline"}>
-                {isPuterSignedIn ? "Puter connected" : isPuterReady ? "Connect Puter" : "Loading Puter"}
+                {isPuterSignedIn ? "Ready" : isPuterReady ? "Setup required" : "Loading"}
               </Badge>
             </div>
           </CardHeader>
           <CardContent>
             <FieldGroup className="gap-5">
               <Field>
-                <FieldLabel>Puter authorization</FieldLabel>
+                <FieldLabel>Workspace setup</FieldLabel>
                 <div className="rounded-3xl border bg-muted/40 p-3 text-sm">
-                  <p className="text-muted-foreground">
-                    Puter’s free image generation uses a user-paid authorization flow. Connect
-                    once here so the Generate button can stay focused on the in-page result.
-                  </p>
+                  <p className="text-muted-foreground">Complete once before creating previews.</p>
                   <Button
                     type="button"
                     variant={isPuterSignedIn ? "secondary" : "default"}
                     className="mt-3 w-full"
                     disabled={!canConnect || isPuterSignedIn}
-                    onClick={connectPuter}
+                    onClick={connectPreviewService}
                   >
                     {generationPhase === "authorizing" ? (
                       <>
                         <Spinner />
-                        Waiting for Puter...
+                        Connecting...
                       </>
                     ) : (
                       <>
                         <PlugZapIcon />
-                        {isPuterSignedIn ? "Puter connected" : "Connect Puter"}
+                        {isPuterSignedIn ? "Ready" : "Continue"}
                       </>
                     )}
                   </Button>
@@ -372,7 +376,7 @@ export function BeforeAfterGenerator() {
                   <UploadIcon className="size-5" />
                   <span>{selectedFileName ?? "Upload JPG, PNG, or WebP"}</span>
                   <span className="text-xs font-normal text-muted-foreground">
-                    Max 8 MB. The image is sent to Puter only when you generate.
+                    Max 8 MB.
                   </span>
                 </Button>
               </Field>
@@ -401,12 +405,10 @@ export function BeforeAfterGenerator() {
                   id="treatment-notes"
                   value={notes}
                   onChange={(event) => setNotes(event.target.value)}
-                  placeholder="Example: keep canine shape natural, brighten by two shades, close small central gap."
+                  placeholder="Keep canine shape natural, brighten by two shades..."
                   className="min-h-28"
                 />
-                <FieldDescription>
-                  Keep notes clinical and avoid adding personal or identifying information.
-                </FieldDescription>
+                <FieldDescription>Optional details for the preview.</FieldDescription>
               </Field>
 
               {error ? (
@@ -417,9 +419,9 @@ export function BeforeAfterGenerator() {
                     variant="outline"
                     size="sm"
                     disabled={!canGenerate || isGenerating}
-                    onClick={generateAfterImage}
+                    onClick={createAfterPreview}
                   >
-                    Retry Puter generation
+                    Retry
                   </Button>
                 </div>
               ) : null}
@@ -429,11 +431,11 @@ export function BeforeAfterGenerator() {
                   <div className="flex items-center justify-between gap-3">
                     <span>
                       {generationPhase === "authorizing"
-                        ? "Waiting for Puter authorization..."
+                        ? "Connecting..."
                         : generationPhase === "uploading"
-                          ? "Preparing image for Puter..."
+                          ? "Preparing image..."
                           : generationPhase === "generating"
-                            ? "Puter is generating the after image..."
+                            ? "Creating preview..."
                             : "Finalizing preview..."}
                     </span>
                     <span className="text-muted-foreground">{progressValue}%</span>
@@ -448,16 +450,16 @@ export function BeforeAfterGenerator() {
               ) : null}
 
               <div className="grid gap-2 sm:grid-cols-2">
-                <Button type="button" disabled={!canGenerate || isGenerating} onClick={generateAfterImage}>
+                <Button type="button" disabled={!canGenerate || isGenerating} onClick={createAfterPreview}>
                   {isGenerating ? (
                     <>
                       <Spinner />
-                      Generating with Puter...
+                      Creating preview...
                     </>
                   ) : (
                     <>
-                      <SparklesIcon />
-                      Generate with Puter
+                      <ImageIcon />
+                      Create preview
                     </>
                   )}
                 </Button>
@@ -473,18 +475,18 @@ export function BeforeAfterGenerator() {
         <div className="grid gap-4 lg:grid-cols-2">
           <ImagePreviewCard
             title="Before"
-            description="Original uploaded image"
+            description="Original image"
             imageUrl={beforeImageUrl}
-            emptyTitle="Upload a before image"
-            emptyDescription="The selected image appears here before generation."
+            emptyTitle="Upload before image"
+            emptyDescription="JPG, PNG, or WebP up to 8 MB."
           />
           <ImagePreviewCard
             title="After"
-            description="Puter-generated treatment visualization"
+            description="Treatment preview"
             imageUrl={afterImageUrl}
             isLoading={isGenerating && generationPhase !== "authorizing"}
-            emptyTitle="Generate an after image"
-            emptyDescription="The Puter-generated after-treatment image appears here once ready."
+            emptyTitle="Create after preview"
+            emptyDescription="Preview appears here."
             downloadName="after-treatment-preview.png"
           />
         </div>
@@ -494,9 +496,7 @@ export function BeforeAfterGenerator() {
         <CardContent className="flex gap-3 p-4 text-sm text-muted-foreground">
           <ShieldAlertIcon className="mt-0.5 size-4 shrink-0 text-foreground" />
           <p>
-            This feature creates a visual simulation for admin review only. It is not a
-            diagnosis, treatment plan, or guaranteed clinical outcome. Puter generation runs
-            through Puter’s browser service and may require the admin to authorize Puter first.
+            For review only. Results may vary.
           </p>
         </CardContent>
       </Card>
@@ -547,7 +547,7 @@ function ImagePreviewCard({
             <Skeleton className="flex-1 rounded-4xl" />
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <Spinner />
-              Waiting for Puter...
+              Creating preview...
             </div>
           </div>
         ) : imageUrl ? (
@@ -570,9 +570,6 @@ function ImagePreviewCard({
               <EmptyTitle>{emptyTitle}</EmptyTitle>
               <EmptyDescription>{emptyDescription}</EmptyDescription>
             </EmptyHeader>
-            <EmptyContent>
-              <p>Use clear, well-lit intraoral or smile photos for best results.</p>
-            </EmptyContent>
           </Empty>
         )}
       </CardContent>

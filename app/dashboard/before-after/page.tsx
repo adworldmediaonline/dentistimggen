@@ -7,8 +7,7 @@ export default function BeforeAfterPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Before & after images</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Generate Puter AI after-treatment teeth previews from admin-uploaded before
-            images and review the result without leaving the dashboard.
+            Create polished after-treatment previews from uploaded before images.
           </p>
         </div>
         <BeforeAfterGenerator />
