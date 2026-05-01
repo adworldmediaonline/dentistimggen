@@ -20,6 +20,19 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Image Recognition Setup
+
+Before using the admin image-pair upload flow, configure Cloudinary and run the Prisma migration that enables `pgvector`:
+
+```bash
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+CLOUDINARY_FOLDER="dentist-image-reco"
+```
+
+The app stores original images in Cloudinary, keeps metadata in Postgres, and indexes before-image embeddings with `pgvector` for nearest-match search.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

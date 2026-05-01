@@ -232,6 +232,8 @@ export type UserWhereInput = {
   banExpires?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
+  imagePairs?: Prisma.ImagePairListRelationFilter
+  matchLogs?: Prisma.ImageMatchLogListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -248,6 +250,8 @@ export type UserOrderByWithRelationInput = {
   banExpires?: Prisma.SortOrderInput | Prisma.SortOrder
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   accounts?: Prisma.AccountOrderByRelationAggregateInput
+  imagePairs?: Prisma.ImagePairOrderByRelationAggregateInput
+  matchLogs?: Prisma.ImageMatchLogOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -267,6 +271,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   banExpires?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
+  imagePairs?: Prisma.ImagePairListRelationFilter
+  matchLogs?: Prisma.ImageMatchLogListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -317,6 +323,8 @@ export type UserCreateInput = {
   banExpires?: Date | string | null
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  imagePairs?: Prisma.ImagePairCreateNestedManyWithoutCreatedByInput
+  matchLogs?: Prisma.ImageMatchLogCreateNestedManyWithoutRequestedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -333,6 +341,8 @@ export type UserUncheckedCreateInput = {
   banExpires?: Date | string | null
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  imagePairs?: Prisma.ImagePairUncheckedCreateNestedManyWithoutCreatedByInput
+  matchLogs?: Prisma.ImageMatchLogUncheckedCreateNestedManyWithoutRequestedByInput
 }
 
 export type UserUpdateInput = {
@@ -349,6 +359,8 @@ export type UserUpdateInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  imagePairs?: Prisma.ImagePairUpdateManyWithoutCreatedByNestedInput
+  matchLogs?: Prisma.ImageMatchLogUpdateManyWithoutRequestedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -365,6 +377,8 @@ export type UserUncheckedUpdateInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  imagePairs?: Prisma.ImagePairUncheckedUpdateManyWithoutCreatedByNestedInput
+  matchLogs?: Prisma.ImageMatchLogUncheckedUpdateManyWithoutRequestedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -508,6 +522,34 @@ export type UserUpdateOneRequiredWithoutAccountsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAccountsInput, Prisma.UserUpdateWithoutAccountsInput>, Prisma.UserUncheckedUpdateWithoutAccountsInput>
 }
 
+export type UserCreateNestedOneWithoutImagePairsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutImagePairsInput, Prisma.UserUncheckedCreateWithoutImagePairsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutImagePairsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutImagePairsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutImagePairsInput, Prisma.UserUncheckedCreateWithoutImagePairsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutImagePairsInput
+  upsert?: Prisma.UserUpsertWithoutImagePairsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutImagePairsInput, Prisma.UserUpdateWithoutImagePairsInput>, Prisma.UserUncheckedUpdateWithoutImagePairsInput>
+}
+
+export type UserCreateNestedOneWithoutMatchLogsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMatchLogsInput, Prisma.UserUncheckedCreateWithoutMatchLogsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMatchLogsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutMatchLogsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMatchLogsInput, Prisma.UserUncheckedCreateWithoutMatchLogsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMatchLogsInput
+  upsert?: Prisma.UserUpsertWithoutMatchLogsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutMatchLogsInput, Prisma.UserUpdateWithoutMatchLogsInput>, Prisma.UserUncheckedUpdateWithoutMatchLogsInput>
+}
+
 export type UserCreateWithoutSessionsInput = {
   id: string
   name: string
@@ -521,6 +563,8 @@ export type UserCreateWithoutSessionsInput = {
   banReason?: string | null
   banExpires?: Date | string | null
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  imagePairs?: Prisma.ImagePairCreateNestedManyWithoutCreatedByInput
+  matchLogs?: Prisma.ImageMatchLogCreateNestedManyWithoutRequestedByInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -536,6 +580,8 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   banReason?: string | null
   banExpires?: Date | string | null
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  imagePairs?: Prisma.ImagePairUncheckedCreateNestedManyWithoutCreatedByInput
+  matchLogs?: Prisma.ImageMatchLogUncheckedCreateNestedManyWithoutRequestedByInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -567,6 +613,8 @@ export type UserUpdateWithoutSessionsInput = {
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  imagePairs?: Prisma.ImagePairUpdateManyWithoutCreatedByNestedInput
+  matchLogs?: Prisma.ImageMatchLogUpdateManyWithoutRequestedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -582,6 +630,8 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  imagePairs?: Prisma.ImagePairUncheckedUpdateManyWithoutCreatedByNestedInput
+  matchLogs?: Prisma.ImageMatchLogUncheckedUpdateManyWithoutRequestedByNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -597,6 +647,8 @@ export type UserCreateWithoutAccountsInput = {
   banReason?: string | null
   banExpires?: Date | string | null
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  imagePairs?: Prisma.ImagePairCreateNestedManyWithoutCreatedByInput
+  matchLogs?: Prisma.ImageMatchLogCreateNestedManyWithoutRequestedByInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -612,6 +664,8 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   banReason?: string | null
   banExpires?: Date | string | null
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  imagePairs?: Prisma.ImagePairUncheckedCreateNestedManyWithoutCreatedByInput
+  matchLogs?: Prisma.ImageMatchLogUncheckedCreateNestedManyWithoutRequestedByInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -643,6 +697,8 @@ export type UserUpdateWithoutAccountsInput = {
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  imagePairs?: Prisma.ImagePairUpdateManyWithoutCreatedByNestedInput
+  matchLogs?: Prisma.ImageMatchLogUpdateManyWithoutRequestedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -658,6 +714,176 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  imagePairs?: Prisma.ImagePairUncheckedUpdateManyWithoutCreatedByNestedInput
+  matchLogs?: Prisma.ImageMatchLogUncheckedUpdateManyWithoutRequestedByNestedInput
+}
+
+export type UserCreateWithoutImagePairsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  matchLogs?: Prisma.ImageMatchLogCreateNestedManyWithoutRequestedByInput
+}
+
+export type UserUncheckedCreateWithoutImagePairsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  matchLogs?: Prisma.ImageMatchLogUncheckedCreateNestedManyWithoutRequestedByInput
+}
+
+export type UserCreateOrConnectWithoutImagePairsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutImagePairsInput, Prisma.UserUncheckedCreateWithoutImagePairsInput>
+}
+
+export type UserUpsertWithoutImagePairsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutImagePairsInput, Prisma.UserUncheckedUpdateWithoutImagePairsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutImagePairsInput, Prisma.UserUncheckedCreateWithoutImagePairsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutImagePairsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutImagePairsInput, Prisma.UserUncheckedUpdateWithoutImagePairsInput>
+}
+
+export type UserUpdateWithoutImagePairsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  matchLogs?: Prisma.ImageMatchLogUpdateManyWithoutRequestedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutImagePairsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  matchLogs?: Prisma.ImageMatchLogUncheckedUpdateManyWithoutRequestedByNestedInput
+}
+
+export type UserCreateWithoutMatchLogsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  imagePairs?: Prisma.ImagePairCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserUncheckedCreateWithoutMatchLogsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  imagePairs?: Prisma.ImagePairUncheckedCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserCreateOrConnectWithoutMatchLogsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutMatchLogsInput, Prisma.UserUncheckedCreateWithoutMatchLogsInput>
+}
+
+export type UserUpsertWithoutMatchLogsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutMatchLogsInput, Prisma.UserUncheckedUpdateWithoutMatchLogsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutMatchLogsInput, Prisma.UserUncheckedCreateWithoutMatchLogsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutMatchLogsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutMatchLogsInput, Prisma.UserUncheckedUpdateWithoutMatchLogsInput>
+}
+
+export type UserUpdateWithoutMatchLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  imagePairs?: Prisma.ImagePairUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutMatchLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  imagePairs?: Prisma.ImagePairUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 
@@ -668,11 +894,15 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
 export type UserCountOutputType = {
   sessions: number
   accounts: number
+  imagePairs: number
+  matchLogs: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
+  imagePairs?: boolean | UserCountOutputTypeCountImagePairsArgs
+  matchLogs?: boolean | UserCountOutputTypeCountMatchLogsArgs
 }
 
 /**
@@ -699,6 +929,20 @@ export type UserCountOutputTypeCountAccountsArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.AccountWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountImagePairsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ImagePairWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountMatchLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ImageMatchLogWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -714,6 +958,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   banExpires?: boolean
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
+  imagePairs?: boolean | Prisma.User$imagePairsArgs<ExtArgs>
+  matchLogs?: boolean | Prisma.User$matchLogsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -763,6 +1009,8 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
+  imagePairs?: boolean | Prisma.User$imagePairsArgs<ExtArgs>
+  matchLogs?: boolean | Prisma.User$matchLogsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -773,6 +1021,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     accounts: Prisma.$AccountPayload<ExtArgs>[]
+    imagePairs: Prisma.$ImagePairPayload<ExtArgs>[]
+    matchLogs: Prisma.$ImageMatchLogPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1182,6 +1432,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  imagePairs<T extends Prisma.User$imagePairsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$imagePairsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImagePairPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  matchLogs<T extends Prisma.User$matchLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$matchLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImageMatchLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1660,6 +1912,54 @@ export type User$accountsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.AccountScalarFieldEnum | Prisma.AccountScalarFieldEnum[]
+}
+
+/**
+ * User.imagePairs
+ */
+export type User$imagePairsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ImagePair
+   */
+  select?: Prisma.ImagePairSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ImagePair
+   */
+  omit?: Prisma.ImagePairOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ImagePairInclude<ExtArgs> | null
+  where?: Prisma.ImagePairWhereInput
+  orderBy?: Prisma.ImagePairOrderByWithRelationInput | Prisma.ImagePairOrderByWithRelationInput[]
+  cursor?: Prisma.ImagePairWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ImagePairScalarFieldEnum | Prisma.ImagePairScalarFieldEnum[]
+}
+
+/**
+ * User.matchLogs
+ */
+export type User$matchLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ImageMatchLog
+   */
+  select?: Prisma.ImageMatchLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ImageMatchLog
+   */
+  omit?: Prisma.ImageMatchLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ImageMatchLogInclude<ExtArgs> | null
+  where?: Prisma.ImageMatchLogWhereInput
+  orderBy?: Prisma.ImageMatchLogOrderByWithRelationInput | Prisma.ImageMatchLogOrderByWithRelationInput[]
+  cursor?: Prisma.ImageMatchLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ImageMatchLogScalarFieldEnum | Prisma.ImageMatchLogScalarFieldEnum[]
 }
 
 /**

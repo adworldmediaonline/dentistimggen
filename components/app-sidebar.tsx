@@ -14,7 +14,9 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import {
+  ImagesIcon,
   LayoutDashboardIcon,
+  SearchCheckIcon,
   ScanSearchIcon,
   ShieldCheckIcon,
   UsersIcon,
@@ -35,6 +37,22 @@ const data = {
       url: "/dashboard#users",
       icon: (
         <UsersIcon
+        />
+      ),
+    },
+    {
+      title: "Image pairs",
+      url: "/dashboard/image-pairs",
+      icon: (
+        <ImagesIcon
+        />
+      ),
+    },
+    {
+      title: "Find match",
+      url: "/dashboard/image-match",
+      icon: (
+        <SearchCheckIcon
         />
       ),
     },

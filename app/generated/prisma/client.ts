@@ -66,3 +66,23 @@ export type Verification = Prisma.VerificationModel
  * 
  */
 export type RateLimit = Prisma.RateLimitModel
+/**
+ * Model ImagePair
+ * 
+ */
+export type ImagePair = Prisma.ImagePairModel
+/**
+ * Model ImageAsset
+ * 
+ */
+export type ImageAsset = Prisma.ImageAssetModel
+/**
+ * Model ImageEmbedding
+ * 
+ */
+export type ImageEmbedding = Prisma.ImageEmbeddingModel
+/**
+ * Model ImageMatchLog
+ * 
+ */
+export type ImageMatchLog = Prisma.ImageMatchLogModel

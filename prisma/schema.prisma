@@ -22,6 +22,8 @@ model User {
   banExpires    DateTime?
   sessions      Session[]
   accounts      Account[]
+  imagePairs    ImagePair[]    @relation("ImagePairCreatedBy")
+  matchLogs     ImageMatchLog[] @relation("ImageMatchRequestedBy")
 
   @@unique([email])
   @@map("user")
@@ -84,4 +86,85 @@ model RateLimit {
 
   @@unique([key])
   @@map("rateLimit")
+}
+
+model ImagePair {
+  id          String    @id @default(cuid())
+  title       String
+  notes       String?
+  tags        String[]  @default([])
+  status      String    @default("processing")
+  createdById String
+  createdBy   User      @relation("ImagePairCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  assets      ImageAsset[]
+  embeddings  ImageEmbedding[]
+  matchLogs   ImageMatchLog[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([createdById])
+  @@index([status])
+  @@map("imagePair")
+}
+
+model ImageAsset {
+  id              String    @id @default(cuid())
+  pairId          String
+  pair            ImagePair @relation(fields: [pairId], references: [id], onDelete: Cascade)
+  kind            String
+  storageProvider String
+  storageKey      String
+  url             String
+  secureUrl       String?
+  checksum        String
+  mimeType        String
+  byteSize        Int
+  width           Int
+  height          Int
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  embedding       ImageEmbedding?
+
+  @@unique([pairId, kind])
+  @@index([checksum])
+  @@index([kind])
+  @@map("imageAsset")
+}
+
+model ImageEmbedding {
+  id        String                  @id @default(cuid())
+  pairId    String
+  pair      ImagePair               @relation(fields: [pairId], references: [id], onDelete: Cascade)
+  assetId   String                  @unique
+  asset     ImageAsset              @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  model     String
+  dimension Int
+  status    String                  @default("ready")
+  embedding Unsupported("vector(64)")
+  error     String?
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+
+  @@index([pairId])
+  @@index([status])
+  @@map("imageEmbedding")
+}
+
+model ImageMatchLog {
+  id              String     @id @default(cuid())
+  requestedById   String
+  requestedBy     User       @relation("ImageMatchRequestedBy", fields: [requestedById], references: [id], onDelete: Restrict)
+  matchedPairId   String?
+  matchedPair     ImagePair? @relation(fields: [matchedPairId], references: [id], onDelete: SetNull)
+  queryChecksum   String
+  queryMimeType   String
+  queryByteSize   Int
+  similarityScore Float?
+  status          String
+  createdAt       DateTime   @default(now())
+
+  @@index([requestedById])
+  @@index([matchedPairId])
+  @@index([status])
+  @@map("imageMatchLog")
 }
