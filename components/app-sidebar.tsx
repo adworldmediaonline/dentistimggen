@@ -2,9 +2,7 @@
 
 import * as React from "react"
 
-import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -16,14 +14,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import {
-  CircleHelpIcon,
-  FileChartColumnIcon,
-  FileIcon,
-  ImagePlusIcon,
   LayoutDashboardIcon,
   ScanSearchIcon,
-  SearchIcon,
-  Settings2Icon,
   ShieldCheckIcon,
   UsersIcon,
 } from "lucide-react"
@@ -47,70 +39,10 @@ const data = {
       ),
     },
     {
-      title: "Before & after",
-      url: "/dashboard/before-after",
-      icon: (
-        <ImagePlusIcon
-        />
-      ),
-    },
-    {
-      title: "Access control",
+      title: "Access policy",
       url: "/dashboard#access",
       icon: (
         <ShieldCheckIcon
-        />
-      ),
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "/dashboard#settings",
-      icon: (
-        <Settings2Icon
-        />
-      ),
-    },
-    {
-      title: "Get Help",
-      url: "mailto:support@example.com",
-      icon: (
-        <CircleHelpIcon
-        />
-      ),
-    },
-    {
-      title: "Search",
-      url: "/dashboard#search",
-      icon: (
-        <SearchIcon
-        />
-      ),
-    },
-  ],
-  documents: [
-    {
-      name: "Image reviews",
-      url: "/dashboard/before-after",
-      icon: (
-        <ImagePlusIcon
-        />
-      ),
-    },
-    {
-      name: "Reports",
-      url: "/dashboard#reports",
-      icon: (
-        <FileChartColumnIcon
-        />
-      ),
-    },
-    {
-      name: "Audit log",
-      url: "/dashboard#audit",
-      icon: (
-        <FileIcon
         />
       ),
     },
@@ -145,8 +77,6 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />
