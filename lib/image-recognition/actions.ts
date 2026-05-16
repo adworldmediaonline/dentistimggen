@@ -319,7 +319,7 @@ export async function findImageMatch(_previousState: MatchResult, formData: Form
     const requestedById = await requireAdminUserId()
     const queryImage = await processImageFile(getImageFile(formData, "queryImage"), "Query")
     const embedding = await generateImageEmbedding(queryImage.buffer)
-    const candidates = await findClosestBeforeImages(embedding.vector, 3)
+    const candidates = await findClosestBeforeImages(embedding.vector, 1)
     const candidate = candidates[0]
     const isConfidentMatch = Boolean(candidate && candidate.score >= IMAGE_MATCH_CONFIDENCE_THRESHOLD)
 
@@ -339,16 +339,14 @@ export async function findImageMatch(_previousState: MatchResult, formData: Form
       return {
         ok: false,
         message: "No indexed before images are ready to search yet.",
-        alternatives: [],
       }
     }
 
     if (!isConfidentMatch) {
       return {
         ok: false,
-        message: "No confident match found. Review the closest alternatives before using an after image.",
+        message: "No confident match found. Review the closest result before using an after image.",
         candidate,
-        alternatives: candidates.slice(1),
       }
     }
 
@@ -356,13 +354,11 @@ export async function findImageMatch(_previousState: MatchResult, formData: Form
       ok: true,
       message: "Closest before image found.",
       candidate,
-      alternatives: candidates.slice(1),
     }
   } catch (error) {
     return {
       ok: false,
       message: error instanceof Error ? error.message : "Unable to search for a matching image.",
-      alternatives: [],
     }
   }
 }

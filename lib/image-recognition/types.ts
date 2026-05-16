@@ -45,5 +45,4 @@ export interface MatchCandidate {
 
 export interface MatchResult extends ActionResult {
   candidate?: MatchCandidate
-  alternatives?: MatchCandidate[]
 }

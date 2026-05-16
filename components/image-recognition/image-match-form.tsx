@@ -27,27 +27,22 @@ import type { MatchCandidate, MatchResult } from "@/lib/image-recognition/types"
 const initialState: MatchResult = {
   ok: false,
   message: "",
-  alternatives: [],
-}
-
-function formatScore(score: number) {
-  return `${Math.round(score * 100)}%`
 }
 
 function MatchImage({
   asset,
-  label,
+  caption,
 }: {
   asset: { url: string; width: number; height: number }
-  label: string
+  caption: "Before" | "After"
 }) {
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium">{label}</p>
+      <p className="text-sm font-medium">{caption}</p>
       <div className="overflow-hidden rounded-3xl border bg-muted">
         <Image
           src={asset.url}
-          alt={label}
+          alt={caption}
           width={asset.width}
           height={asset.height}
           className="aspect-[4/3] w-full object-cover"
@@ -61,19 +56,13 @@ function MatchCandidateCard({ candidate }: { candidate: MatchCandidate }) {
   return (
     <Card className="border-primary/30">
       <CardHeader>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <CardTitle>{candidate.title}</CardTitle>
-            <CardDescription>Similarity score {formatScore(candidate.score)}</CardDescription>
-          </div>
-          <Badge>{formatScore(candidate.score)}</Badge>
-        </div>
+        <CardTitle>{candidate.title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
-          <MatchImage asset={candidate.beforeAsset} label="Matched before image" />
+          <MatchImage asset={candidate.beforeAsset} caption="Before" />
           {candidate.afterAsset ? (
-            <MatchImage asset={candidate.afterAsset} label="Recommended after image" />
+            <MatchImage asset={candidate.afterAsset} caption="After" />
           ) : (
             <div className="rounded-3xl border border-dashed p-6 text-sm text-muted-foreground">
               No after image is linked to this pair.
@@ -107,9 +96,9 @@ export function ImageMatchForm() {
               <ScanSearchIcon className="size-5" />
             </div>
             <div>
-              <CardTitle>Find matching case</CardTitle>
+              <CardTitle>Find the after image</CardTitle>
               <CardDescription>
-                Upload a new before image to find the closest indexed before image and its after result.
+                Upload a before image to see the corresponding after image from your saved cases.
               </CardDescription>
             </div>
           </div>
@@ -127,14 +116,14 @@ export function ImageMatchForm() {
               ) : null}
 
               <Field>
-                <FieldLabel htmlFor="queryImage">Query before image</FieldLabel>
+                <FieldLabel htmlFor="queryImage">Before image</FieldLabel>
                 <Input id="queryImage" name="queryImage" type="file" accept={ACCEPTED_IMAGE_TYPES.join(",")} required />
                 <FieldDescription>
-                  Use the same kind of before image angle and crop used in your stored cases.
+                  Use the same angle, lighting, and crop as your stored before photos for the most reliable match.
                 </FieldDescription>
               </Field>
 
-              <SubmitButton pendingLabel="Searching indexed images...">Search match</SubmitButton>
+              <SubmitButton pendingLabel="Finding match…">Show after image</SubmitButton>
             </FieldGroup>
           </form>
         </CardContent>
@@ -146,33 +135,14 @@ export function ImageMatchForm() {
         ) : (
           <Card className="border-dashed">
             <CardHeader>
-              <CardTitle>No search yet</CardTitle>
+              <CardTitle>No results yet</CardTitle>
               <CardDescription>
-                Search results will show the closest before image and the linked after image here.
+                Upload a before image on the left to see the paired before and after images here.
               </CardDescription>
             </CardHeader>
           </Card>
         )}
 
-        {state.alternatives?.length ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Closest alternatives</CardTitle>
-              <CardDescription>Review these when the top confidence is low.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {state.alternatives.map((candidate) => (
-                <div key={candidate.pairId} className="flex items-center justify-between gap-4 rounded-3xl border p-3">
-                  <div>
-                    <p className="font-medium">{candidate.title}</p>
-                    <p className="text-sm text-muted-foreground">Similarity score {formatScore(candidate.score)}</p>
-                  </div>
-                  <Badge variant="outline">{formatScore(candidate.score)}</Badge>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        ) : null}
       </div>
     </div>
   )
