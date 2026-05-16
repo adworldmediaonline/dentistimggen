@@ -1,10 +1,10 @@
 "use client"
 
-import Image from "next/image"
 import { useActionState } from "react"
 import { ScanSearchIcon } from "lucide-react"
 
 import { SubmitButton } from "@/components/image-recognition/submit-button"
+import { BeforeAfterLightbox } from "@/components/image-recognition/before-after-lightbox"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -29,29 +29,6 @@ const initialState: MatchResult = {
   message: "",
 }
 
-function MatchImage({
-  asset,
-  caption,
-}: {
-  asset: { url: string; width: number; height: number }
-  caption: "Before" | "After"
-}) {
-  return (
-    <div className="space-y-2">
-      <p className="text-sm font-medium">{caption}</p>
-      <div className="overflow-hidden rounded-3xl border bg-muted">
-        <Image
-          src={asset.url}
-          alt={caption}
-          width={asset.width}
-          height={asset.height}
-          className="aspect-[4/3] w-full object-cover"
-        />
-      </div>
-    </div>
-  )
-}
-
 function MatchCandidateCard({ candidate }: { candidate: MatchCandidate }) {
   return (
     <Card className="border-primary/30">
@@ -59,16 +36,7 @@ function MatchCandidateCard({ candidate }: { candidate: MatchCandidate }) {
         <CardTitle>{candidate.title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
-          <MatchImage asset={candidate.beforeAsset} caption="Before" />
-          {candidate.afterAsset ? (
-            <MatchImage asset={candidate.afterAsset} caption="After" />
-          ) : (
-            <div className="rounded-3xl border border-dashed p-6 text-sm text-muted-foreground">
-              No after image is linked to this pair.
-            </div>
-          )}
-        </div>
+        <BeforeAfterLightbox candidate={candidate} />
         {candidate.notes ? <p className="text-sm text-muted-foreground">{candidate.notes}</p> : null}
         {candidate.tags.length > 0 ? (
           <div className="flex flex-wrap gap-2">
