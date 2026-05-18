@@ -13,14 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import {
-  ImagesIcon,
-  LayoutDashboardIcon,
-  SearchCheckIcon,
-  ScanSearchIcon,
-  ShieldCheckIcon,
-  UsersIcon,
-} from "lucide-react"
+import { ImagesIcon, LayoutDashboardIcon, ScanSearchIcon, SearchCheckIcon } from "lucide-react"
 
 const data = {
   navMain: [
@@ -29,14 +22,6 @@ const data = {
       url: "/dashboard",
       icon: (
         <LayoutDashboardIcon
-        />
-      ),
-    },
-    {
-      title: "Users",
-      url: "/dashboard#users",
-      icon: (
-        <UsersIcon
         />
       ),
     },
@@ -53,14 +38,6 @@ const data = {
       url: "/dashboard/image-match",
       icon: (
         <SearchCheckIcon
-        />
-      ),
-    },
-    {
-      title: "Access policy",
-      url: "/dashboard#access",
-      icon: (
-        <ShieldCheckIcon
         />
       ),
     },
