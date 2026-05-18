@@ -55,7 +55,11 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  RateLimit: 'RateLimit'
+  RateLimit: 'RateLimit',
+  ImagePair: 'ImagePair',
+  ImageAsset: 'ImageAsset',
+  ImageEmbedding: 'ImageEmbedding',
+  ImageMatchLog: 'ImageMatchLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -145,6 +149,70 @@ export const RateLimitScalarFieldEnum = {
 } as const
 
 export type RateLimitScalarFieldEnum = (typeof RateLimitScalarFieldEnum)[keyof typeof RateLimitScalarFieldEnum]
+
+
+export const ImagePairScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  notes: 'notes',
+  tags: 'tags',
+  status: 'status',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ImagePairScalarFieldEnum = (typeof ImagePairScalarFieldEnum)[keyof typeof ImagePairScalarFieldEnum]
+
+
+export const ImageAssetScalarFieldEnum = {
+  id: 'id',
+  pairId: 'pairId',
+  kind: 'kind',
+  storageProvider: 'storageProvider',
+  storageKey: 'storageKey',
+  url: 'url',
+  secureUrl: 'secureUrl',
+  checksum: 'checksum',
+  mimeType: 'mimeType',
+  byteSize: 'byteSize',
+  width: 'width',
+  height: 'height',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ImageAssetScalarFieldEnum = (typeof ImageAssetScalarFieldEnum)[keyof typeof ImageAssetScalarFieldEnum]
+
+
+export const ImageEmbeddingScalarFieldEnum = {
+  id: 'id',
+  pairId: 'pairId',
+  assetId: 'assetId',
+  model: 'model',
+  dimension: 'dimension',
+  status: 'status',
+  error: 'error',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ImageEmbeddingScalarFieldEnum = (typeof ImageEmbeddingScalarFieldEnum)[keyof typeof ImageEmbeddingScalarFieldEnum]
+
+
+export const ImageMatchLogScalarFieldEnum = {
+  id: 'id',
+  requestedById: 'requestedById',
+  matchedPairId: 'matchedPairId',
+  queryChecksum: 'queryChecksum',
+  queryMimeType: 'queryMimeType',
+  queryByteSize: 'queryByteSize',
+  similarityScore: 'similarityScore',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type ImageMatchLogScalarFieldEnum = (typeof ImageMatchLogScalarFieldEnum)[keyof typeof ImageMatchLogScalarFieldEnum]
 
 
 export const SortOrder = {

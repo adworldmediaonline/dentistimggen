@@ -388,7 +388,11 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  RateLimit: 'RateLimit'
+  RateLimit: 'RateLimit',
+  ImagePair: 'ImagePair',
+  ImageAsset: 'ImageAsset',
+  ImageEmbedding: 'ImageEmbedding',
+  ImageMatchLog: 'ImageMatchLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -404,7 +408,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "rateLimit"
+    modelProps: "user" | "session" | "account" | "verification" | "rateLimit" | "imagePair" | "imageAsset" | "imageEmbedding" | "imageMatchLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -778,6 +782,286 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ImagePair: {
+      payload: Prisma.$ImagePairPayload<ExtArgs>
+      fields: Prisma.ImagePairFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ImagePairFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePairPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ImagePairFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePairPayload>
+        }
+        findFirst: {
+          args: Prisma.ImagePairFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePairPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ImagePairFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePairPayload>
+        }
+        findMany: {
+          args: Prisma.ImagePairFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePairPayload>[]
+        }
+        create: {
+          args: Prisma.ImagePairCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePairPayload>
+        }
+        createMany: {
+          args: Prisma.ImagePairCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ImagePairCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePairPayload>[]
+        }
+        delete: {
+          args: Prisma.ImagePairDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePairPayload>
+        }
+        update: {
+          args: Prisma.ImagePairUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePairPayload>
+        }
+        deleteMany: {
+          args: Prisma.ImagePairDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ImagePairUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ImagePairUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePairPayload>[]
+        }
+        upsert: {
+          args: Prisma.ImagePairUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePairPayload>
+        }
+        aggregate: {
+          args: Prisma.ImagePairAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateImagePair>
+        }
+        groupBy: {
+          args: Prisma.ImagePairGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImagePairGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ImagePairCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImagePairCountAggregateOutputType> | number
+        }
+      }
+    }
+    ImageAsset: {
+      payload: Prisma.$ImageAssetPayload<ExtArgs>
+      fields: Prisma.ImageAssetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ImageAssetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageAssetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ImageAssetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageAssetPayload>
+        }
+        findFirst: {
+          args: Prisma.ImageAssetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageAssetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ImageAssetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageAssetPayload>
+        }
+        findMany: {
+          args: Prisma.ImageAssetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageAssetPayload>[]
+        }
+        create: {
+          args: Prisma.ImageAssetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageAssetPayload>
+        }
+        createMany: {
+          args: Prisma.ImageAssetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ImageAssetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageAssetPayload>[]
+        }
+        delete: {
+          args: Prisma.ImageAssetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageAssetPayload>
+        }
+        update: {
+          args: Prisma.ImageAssetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageAssetPayload>
+        }
+        deleteMany: {
+          args: Prisma.ImageAssetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ImageAssetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ImageAssetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageAssetPayload>[]
+        }
+        upsert: {
+          args: Prisma.ImageAssetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageAssetPayload>
+        }
+        aggregate: {
+          args: Prisma.ImageAssetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateImageAsset>
+        }
+        groupBy: {
+          args: Prisma.ImageAssetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImageAssetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ImageAssetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImageAssetCountAggregateOutputType> | number
+        }
+      }
+    }
+    ImageEmbedding: {
+      payload: Prisma.$ImageEmbeddingPayload<ExtArgs>
+      fields: Prisma.ImageEmbeddingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ImageEmbeddingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageEmbeddingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ImageEmbeddingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageEmbeddingPayload>
+        }
+        findFirst: {
+          args: Prisma.ImageEmbeddingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageEmbeddingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ImageEmbeddingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageEmbeddingPayload>
+        }
+        findMany: {
+          args: Prisma.ImageEmbeddingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageEmbeddingPayload>[]
+        }
+        delete: {
+          args: Prisma.ImageEmbeddingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageEmbeddingPayload>
+        }
+        update: {
+          args: Prisma.ImageEmbeddingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageEmbeddingPayload>
+        }
+        deleteMany: {
+          args: Prisma.ImageEmbeddingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ImageEmbeddingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ImageEmbeddingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageEmbeddingPayload>[]
+        }
+        aggregate: {
+          args: Prisma.ImageEmbeddingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateImageEmbedding>
+        }
+        groupBy: {
+          args: Prisma.ImageEmbeddingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImageEmbeddingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ImageEmbeddingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImageEmbeddingCountAggregateOutputType> | number
+        }
+      }
+    }
+    ImageMatchLog: {
+      payload: Prisma.$ImageMatchLogPayload<ExtArgs>
+      fields: Prisma.ImageMatchLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ImageMatchLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageMatchLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ImageMatchLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageMatchLogPayload>
+        }
+        findFirst: {
+          args: Prisma.ImageMatchLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageMatchLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ImageMatchLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageMatchLogPayload>
+        }
+        findMany: {
+          args: Prisma.ImageMatchLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageMatchLogPayload>[]
+        }
+        create: {
+          args: Prisma.ImageMatchLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageMatchLogPayload>
+        }
+        createMany: {
+          args: Prisma.ImageMatchLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ImageMatchLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageMatchLogPayload>[]
+        }
+        delete: {
+          args: Prisma.ImageMatchLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageMatchLogPayload>
+        }
+        update: {
+          args: Prisma.ImageMatchLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageMatchLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.ImageMatchLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ImageMatchLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ImageMatchLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageMatchLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.ImageMatchLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageMatchLogPayload>
+        }
+        aggregate: {
+          args: Prisma.ImageMatchLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateImageMatchLog>
+        }
+        groupBy: {
+          args: Prisma.ImageMatchLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImageMatchLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ImageMatchLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImageMatchLogCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -888,6 +1172,70 @@ export const RateLimitScalarFieldEnum = {
 } as const
 
 export type RateLimitScalarFieldEnum = (typeof RateLimitScalarFieldEnum)[keyof typeof RateLimitScalarFieldEnum]
+
+
+export const ImagePairScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  notes: 'notes',
+  tags: 'tags',
+  status: 'status',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ImagePairScalarFieldEnum = (typeof ImagePairScalarFieldEnum)[keyof typeof ImagePairScalarFieldEnum]
+
+
+export const ImageAssetScalarFieldEnum = {
+  id: 'id',
+  pairId: 'pairId',
+  kind: 'kind',
+  storageProvider: 'storageProvider',
+  storageKey: 'storageKey',
+  url: 'url',
+  secureUrl: 'secureUrl',
+  checksum: 'checksum',
+  mimeType: 'mimeType',
+  byteSize: 'byteSize',
+  width: 'width',
+  height: 'height',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ImageAssetScalarFieldEnum = (typeof ImageAssetScalarFieldEnum)[keyof typeof ImageAssetScalarFieldEnum]
+
+
+export const ImageEmbeddingScalarFieldEnum = {
+  id: 'id',
+  pairId: 'pairId',
+  assetId: 'assetId',
+  model: 'model',
+  dimension: 'dimension',
+  status: 'status',
+  error: 'error',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ImageEmbeddingScalarFieldEnum = (typeof ImageEmbeddingScalarFieldEnum)[keyof typeof ImageEmbeddingScalarFieldEnum]
+
+
+export const ImageMatchLogScalarFieldEnum = {
+  id: 'id',
+  requestedById: 'requestedById',
+  matchedPairId: 'matchedPairId',
+  queryChecksum: 'queryChecksum',
+  queryMimeType: 'queryMimeType',
+  queryByteSize: 'queryByteSize',
+  similarityScore: 'similarityScore',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type ImageMatchLogScalarFieldEnum = (typeof ImageMatchLogScalarFieldEnum)[keyof typeof ImageMatchLogScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1111,6 +1459,10 @@ export type GlobalOmitConfig = {
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit
   rateLimit?: Prisma.RateLimitOmit
+  imagePair?: Prisma.ImagePairOmit
+  imageAsset?: Prisma.ImageAssetOmit
+  imageEmbedding?: Prisma.ImageEmbeddingOmit
+  imageMatchLog?: Prisma.ImageMatchLogOmit
 }
 
 /* Types for Logging */
