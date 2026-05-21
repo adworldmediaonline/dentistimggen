@@ -13,6 +13,7 @@ export const IMAGE_PAIR_STATUS = {
 export const IMAGE_MATCH_STATUS = {
   matched: "matched",
   noConfidentMatch: "no_confident_match",
+  wrongImageType: "wrong_image_type",
   failed: "failed",
 } as const
 
