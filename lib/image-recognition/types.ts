@@ -45,4 +45,11 @@ export interface MatchCandidate {
 
 export interface MatchResult extends ActionResult {
   candidate?: MatchCandidate
+  searched?: boolean
+}
+
+export interface AfterMatchHit {
+  pairId: string
+  title: string
+  score: number
 }

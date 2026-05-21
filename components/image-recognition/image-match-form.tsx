@@ -100,6 +100,15 @@ export function ImageMatchForm() {
       <div className="space-y-4">
         {state.candidate ? (
           <MatchCandidateCard candidate={state.candidate} />
+        ) : state.searched ? (
+          <Card className="border-dashed">
+            <CardHeader>
+              <CardTitle>No match found</CardTitle>
+              <CardDescription>
+                {state.message || "Upload a before image that matches a stored case."}
+              </CardDescription>
+            </CardHeader>
+          </Card>
         ) : (
           <Card className="border-dashed">
             <CardHeader>
@@ -110,7 +119,6 @@ export function ImageMatchForm() {
             </CardHeader>
           </Card>
         )}
-
       </div>
     </div>
   )

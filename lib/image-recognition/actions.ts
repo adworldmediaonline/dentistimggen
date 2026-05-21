@@ -14,7 +14,7 @@ import {
 } from "@/lib/image-recognition/constants"
 import { generateImageEmbedding, toPgVector } from "@/lib/image-recognition/embedding-service"
 import { parseTags, processImageFile } from "@/lib/image-recognition/image-processing"
-import { findClosestBeforeImages } from "@/lib/image-recognition/match-search"
+import { findClosestAfterImages, findClosestBeforeImages } from "@/lib/image-recognition/match-search"
 import { storeImageAsset } from "@/lib/image-recognition/storage-service"
 import type { ActionResult, MatchResult, ProcessedImage } from "@/lib/image-recognition/types"
 import { auth } from "@/lib/auth"
@@ -173,7 +173,7 @@ export async function createImagePair(_previousState: ActionResult, formData: Fo
       pairId: pair.id,
     })
 
-    await createImageAsset({
+    const afterAsset = await createImageAsset({
       image: afterImage,
       kind: IMAGE_ASSET_KIND.after,
       pairId: pair.id,
@@ -183,6 +183,12 @@ export async function createImagePair(_previousState: ActionResult, formData: Fo
       pairId: pair.id,
       assetId: beforeAsset.id,
       buffer: beforeImage.buffer,
+    })
+
+    await insertImageEmbedding({
+      pairId: pair.id,
+      assetId: afterAsset.id,
+      buffer: afterImage.buffer,
     })
 
     await prisma.imagePair.update({
@@ -220,45 +226,31 @@ export async function backfillMissingEmbeddings(
   try {
     await requireAdminUserId()
 
-    const pairs = await prisma.imagePair.findMany({
+    const assets = await prisma.imageAsset.findMany({
       where: {
-        status: {
-          not: IMAGE_PAIR_STATUS.archived,
+        kind: {
+          in: [IMAGE_ASSET_KIND.before, IMAGE_ASSET_KIND.after],
         },
-        embeddings: {
-          none: {},
+        embedding: {
+          is: null,
         },
-        assets: {
-          some: {
-            kind: IMAGE_ASSET_KIND.before,
+        pair: {
+          status: {
+            not: IMAGE_PAIR_STATUS.archived,
           },
         },
       },
-      include: {
-        assets: {
-          where: {
-            kind: IMAGE_ASSET_KIND.before,
-          },
-          take: 1,
-        },
-      },
-      take: 25,
+      take: 50,
     })
 
     let indexedCount = 0
 
-    for (const pair of pairs) {
-      const beforeAsset = pair.assets[0]
-
-      if (!beforeAsset) {
-        continue
-      }
-
-      const response = await fetch(beforeAsset.url)
+    for (const asset of assets) {
+      const response = await fetch(asset.url)
 
       if (!response.ok) {
         await prisma.imagePair.update({
-          where: { id: pair.id },
+          where: { id: asset.pairId },
           data: { status: IMAGE_PAIR_STATUS.failed },
         })
         continue
@@ -267,13 +259,13 @@ export async function backfillMissingEmbeddings(
       const buffer = Buffer.from(await response.arrayBuffer())
 
       await insertImageEmbedding({
-        pairId: pair.id,
-        assetId: beforeAsset.id,
+        pairId: asset.pairId,
+        assetId: asset.id,
         buffer,
       })
 
       await prisma.imagePair.update({
-        where: { id: pair.id },
+        where: { id: asset.pairId },
         data: { status: IMAGE_PAIR_STATUS.ready },
       })
 
@@ -287,7 +279,7 @@ export async function backfillMissingEmbeddings(
       return { ok: true, message: "No missing embeddings found." }
     }
 
-    return { ok: true, message: `Indexed ${indexedCount} before image${indexedCount === 1 ? "" : "s"}.` }
+    return { ok: true, message: `Indexed ${indexedCount} image${indexedCount === 1 ? "" : "s"}.` }
   } catch (error) {
     return {
       ok: false,
@@ -319,8 +311,41 @@ export async function findImageMatch(_previousState: MatchResult, formData: Form
     const requestedById = await requireAdminUserId()
     const queryImage = await processImageFile(getImageFile(formData, "queryImage"), "Query")
     const embedding = await generateImageEmbedding(queryImage.buffer)
-    const candidates = await findClosestBeforeImages(embedding.vector, 1)
-    const candidate = candidates[0]
+
+    const [beforeCandidates, afterCandidates] = await Promise.all([
+      findClosestBeforeImages(embedding.vector, 1),
+      findClosestAfterImages(embedding.vector, 1),
+    ])
+
+    const candidate = beforeCandidates[0]
+    const afterHit = afterCandidates[0]
+
+    const matchesAfterImage = Boolean(
+      afterHit &&
+        afterHit.score >= IMAGE_MATCH_CONFIDENCE_THRESHOLD &&
+        (!candidate || afterHit.score >= candidate.score)
+    )
+
+    if (matchesAfterImage) {
+      await prisma.imageMatchLog.create({
+        data: {
+          requestedById,
+          matchedPairId: null,
+          queryChecksum: queryImage.checksum,
+          queryMimeType: queryImage.mimeType,
+          queryByteSize: queryImage.byteSize,
+          similarityScore: afterHit?.score,
+          status: IMAGE_MATCH_STATUS.wrongImageType,
+        },
+      })
+
+      return {
+        ok: false,
+        message: "No match found. Upload a before image, not an after image.",
+        searched: true,
+      }
+    }
+
     const isConfidentMatch = Boolean(candidate && candidate.score >= IMAGE_MATCH_CONFIDENCE_THRESHOLD)
 
     await prisma.imageMatchLog.create({
@@ -339,26 +364,29 @@ export async function findImageMatch(_previousState: MatchResult, formData: Form
       return {
         ok: false,
         message: "No indexed before images are ready to search yet.",
+        searched: true,
       }
     }
 
     if (!isConfidentMatch) {
       return {
         ok: false,
-        message: "No confident match found. Review the closest result before using an after image.",
-        candidate,
+        message: "No match found.",
+        searched: true,
       }
     }
 
     return {
       ok: true,
-      message: "Closest before image found.",
+      message: "Match found.",
       candidate,
+      searched: true,
     }
   } catch (error) {
     return {
       ok: false,
       message: error instanceof Error ? error.message : "Unable to search for a matching image.",
+      searched: true,
     }
   }
 }

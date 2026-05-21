@@ -1,7 +1,7 @@
 import { Prisma } from "@/app/generated/prisma/client"
 import { IMAGE_PAIR_STATUS } from "@/lib/image-recognition/constants"
 import { toPgVector } from "@/lib/image-recognition/embedding-service"
-import type { MatchCandidate } from "@/lib/image-recognition/types"
+import type { AfterMatchHit, MatchCandidate } from "@/lib/image-recognition/types"
 import { prisma } from "@/lib/prisma"
 
 interface MatchRow {
@@ -64,5 +64,37 @@ export async function findClosestBeforeImages(vector: number[], limit = 3): Prom
           height: row.afterHeight ?? 0,
         }
       : null,
+  }))
+}
+
+interface AfterMatchRow {
+  pairId: string
+  title: string
+  score: number
+}
+
+export async function findClosestAfterImages(vector: number[], limit = 1): Promise<AfterMatchHit[]> {
+  const pgVector = toPgVector(vector)
+  const vectorSql = Prisma.raw(`'${pgVector}'::vector`)
+
+  const rows = await prisma.$queryRaw<AfterMatchRow[]>(Prisma.sql`
+    SELECT
+      p.id AS "pairId",
+      p.title,
+      1 - (e.embedding <=> ${vectorSql}) AS score
+    FROM "imageEmbedding" e
+    INNER JOIN "imagePair" p ON p.id = e."pairId"
+    INNER JOIN "imageAsset" after_asset ON after_asset.id = e."assetId"
+    WHERE p.status = ${IMAGE_PAIR_STATUS.ready}
+      AND e.status = 'ready'
+      AND after_asset.kind = 'after'
+    ORDER BY e.embedding <=> ${vectorSql}
+    LIMIT ${limit}
+  `)
+
+  return rows.map((row) => ({
+    pairId: row.pairId,
+    title: row.title,
+    score: Number(row.score),
   }))
 }
