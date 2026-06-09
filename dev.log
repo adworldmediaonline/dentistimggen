@@ -1,0 +1,43 @@
+
+> dentistimgreco@0.1.0 dev /Users/deepakrajput/Projects/SamBodhi/dentistimggen
+> next dev
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.135.244.83:3000
+- Environments: .env.local
+✓ Ready in 338ms
+- Cache Components enabled
+- Experiments (use with caution):
+  · serverActions
+
+ GET / 200 in 288ms (next.js: 140ms, application-code: 147ms)
+ GET /sign-up 200 in 1118ms (next.js: 1017ms, application-code: 101ms)
+ GET /dashboard 200 in 415ms (next.js: 183ms, application-code: 231ms)
+ POST /api/auth/sign-up/email 200 in 3.2s (next.js: 3.0s, application-code: 210ms)
+ GET /api/auth/get-session 200 in 24ms (next.js: 9ms, application-code: 15ms)
+✓ Compiled in 218ms
+ POST /api/auth/sign-up/email 200 in 132ms (next.js: 8ms, application-code: 124ms)
+ POST /api/auth/sign-in/email 200 in 134ms (next.js: 19ms, application-code: 115ms)
+ GET /dashboard 200 in 227ms (next.js: 16ms, application-code: 210ms)
+ GET /dashboard 200 in 55ms (next.js: 2ms, application-code: 53ms)
+ GET / 200 in 36ms (next.js: 3ms, application-code: 32ms)
+ GET / 200 in 238ms (next.js: 9ms, application-code: 229ms)
+ GET /dashboard 200 in 111ms (next.js: 9ms, application-code: 102ms)
+ GET /sign-in?callbackUrl=/dashboard 200 in 676ms (next.js: 562ms, application-code: 114ms)
+2026-06-09T16:11:48.964Z ERROR [Better Auth]: User not found { email: 'deepak@gmail.com' }
+ POST /api/auth/sign-in/email 401 in 124ms (next.js: 12ms, application-code: 112ms)
+2026-06-09T16:12:01.963Z ERROR [Better Auth]: User not found { email: 'contact@ideepakrajput.in' }
+ POST /api/auth/sign-in/email 401 in 109ms (next.js: 8ms, application-code: 101ms)
+2026-06-09T16:12:03.414Z ERROR [Better Auth]: User not found { email: 'contact@ideepakrajput.in' }
+ POST /api/auth/sign-in/email 401 in 103ms (next.js: 9ms, application-code: 94ms)
+ GET /sign-up 200 in 44ms (next.js: 8ms, application-code: 36ms)
+ POST /api/auth/sign-up/email 200 in 118ms (next.js: 7ms, application-code: 112ms)
+ GET /verify-email?email=deepak%40gmail.com 200 in 413ms (next.js: 396ms, application-code: 17ms)
+ GET /sign-in 200 in 33ms (next.js: 8ms, application-code: 25ms)
+2026-06-09T16:12:25.949Z ERROR [Better Auth]: User not found { email: 'contact@ideepakrajput.in' }
+ POST /api/auth/sign-in/email 401 in 111ms (next.js: 7ms, application-code: 104ms)
+ GET /sign-up 200 in 26ms (next.js: 5ms, application-code: 22ms)
+ POST /api/auth/sign-up/email 200 in 122ms (next.js: 7ms, application-code: 115ms)
+ GET /verify-email?email=deepakrajput.jsd%40gmail.com 200 in 14ms (next.js: 1599µs, application-code: 13ms)
+ GET /verify-email?email=deepakrajput.jsd%40gmail.com 200 in 193ms (next.js: 4ms, application-code: 188ms)
