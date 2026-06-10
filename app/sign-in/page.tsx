@@ -10,9 +10,8 @@ interface SignInPageProps {
 
 async function SignInPageContent({ searchParams }: SignInPageProps) {
   const { callbackUrl } = await searchParams
-  const hasGoogleAuth = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
 
-  return <SignInForm callbackUrl={callbackUrl ?? "/dashboard"} hasGoogleAuth={hasGoogleAuth} />
+  return <SignInForm callbackUrl={callbackUrl ?? "/dashboard"} />
 }
 
 export default function SignInPage({ searchParams }: SignInPageProps) {

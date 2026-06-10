@@ -29,10 +29,27 @@ export async function generateImageEmbedding(buffer: Buffer): Promise<ImageEmbed
   }
 }
 
-export function toPgVector(vector: number[]): string {
+export function assertEmbedding(vector: number[]): number[] {
   if (vector.length !== EMBEDDING_DIMENSION) {
     throw new Error(`Expected ${EMBEDDING_DIMENSION} embedding values, received ${vector.length}.`)
   }
+  return vector
+}
 
-  return `[${vector.map((value) => value.toFixed(8)).join(",")}]`
+/**
+ * Cosine similarity for two equal-length vectors. The stored embeddings are
+ * already L2-normalized in generateImageEmbedding(), so this is effectively a
+ * dot product, but we normalize defensively to stay correct for any input.
+ */
+export function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0
+  let magA = 0
+  let magB = 0
+  for (let i = 0; i < a.length; i += 1) {
+    dot += a[i] * b[i]
+    magA += a[i] * a[i]
+    magB += b[i] * b[i]
+  }
+  const denom = Math.sqrt(magA) * Math.sqrt(magB)
+  return denom === 0 ? 0 : dot / denom
 }

@@ -1,0 +1,170 @@
+
+> dentistimgreco@0.1.0 dev /Users/deepakrajput/Projects/SamBodhi/dentistimggen
+> next dev
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.135.244.83:3000
+- Environments: .env.local
+✓ Ready in 246ms
+- Cache Components enabled
+- Experiments (use with caution):
+  · serverActions
+
+○ Compiling / ...
+ GET / 200 in 3.9s (next.js: 3.7s, application-code: 134ms)
+ GET /sign-in 200 in 562ms (next.js: 474ms, application-code: 88ms)
+ GET /sign-up 200 in 281ms (next.js: 237ms, application-code: 44ms)
+ GET /dashboard 200 in 603ms (next.js: 436ms, application-code: 166ms)
+ GET /unauthorized 200 in 182ms (next.js: 146ms, application-code: 37ms)
+ GET /sign-up 200 in 51ms (next.js: 6ms, application-code: 45ms)
+ GET /sign-up 200 in 33ms (next.js: 3ms, application-code: 30ms)
+ POST /api/_authcheck 404 in 309ms (next.js: 266ms, application-code: 43ms)
+ POST /api/_authcheck 404 in 32ms (next.js: 1776µs, application-code: 30ms)
+ POST /api/_authcheck 404 in 22ms (next.js: 1498µs, application-code: 21ms)
+ POST /api/_authcheck 404 in 21ms (next.js: 1232µs, application-code: 19ms)
+ POST /api/_authcheck 404 in 20ms (next.js: 1112µs, application-code: 19ms)
+ POST /api/_authcheck 404 in 21ms (next.js: 1085µs, application-code: 20ms)
+ POST /api/_authcheck 404 in 19ms (next.js: 1124µs, application-code: 18ms)
+ POST /api/_authcheck 404 in 28ms (next.js: 3ms, application-code: 25ms)
+ POST /api/authcheck 200 in 180ms (next.js: 171ms, application-code: 9ms)
+ POST /api/authcheck 200 in 108ms (next.js: 2ms, application-code: 106ms)
+ POST /api/authcheck 200 in 7ms (next.js: 1746µs, application-code: 6ms)
+ POST /api/authcheck 200 in 4ms (next.js: 667µs, application-code: 3ms)
+ POST /api/authcheck 200 in 32ms (next.js: 628µs, application-code: 31ms)
+ POST /api/authcheck 200 in 35ms (next.js: 673µs, application-code: 34ms)
+ POST /api/authcheck 200 in 5ms (next.js: 685µs, application-code: 4ms)
+ POST /api/authcheck 200 in 3ms (next.js: 597µs, application-code: 3ms)
+ POST /api/authcheck 200 in 41ms (next.js: 780µs, application-code: 40ms)
+ POST /api/authcheck 200 in 14ms (next.js: 3ms, application-code: 11ms)
+ GET / 200 in 225ms (next.js: 90ms, application-code: 134ms)
+ GET /sign-in 200 in 115ms (next.js: 16ms, application-code: 99ms)
+ GET /sign-up 200 in 67ms (next.js: 25ms, application-code: 42ms)
+ GET /dashboard 200 in 107ms (next.js: 33ms, application-code: 75ms)
+ GET /unauthorized 200 in 55ms (next.js: 15ms, application-code: 40ms)
+ GET / 200 in 94ms (next.js: 12ms, application-code: 82ms)
+ GET /dashboard 200 in 176ms (next.js: 8ms, application-code: 168ms)
+ GET /sign-in?callbackUrl=/dashboard 200 in 82ms (next.js: 3ms, application-code: 79ms)
+ POST /sign-in?callbackUrl=/dashboard 200 in 38ms (next.js: 4ms, application-code: 34ms)
+  └─ ƒ signInAction({"email":"worksbydeepak@gmail.com","password":"Deepak$$6272"}) in 16ms lib/auth-actions.ts
+ GET /sign-up 200 in 38ms (next.js: 10ms, application-code: 29ms)
+ POST /sign-up 200 in 95ms (next.js: 6ms, application-code: 89ms)
+  └─ ƒ signUpAction({"email":"worksbydeepak@gmail.com","name":"Deepak Kumar","password":"Deepak@123"}) in 72ms lib/auth-actions.ts
+ GET /dashboard 200 in 23ms (next.js: 2ms, application-code: 21ms)
+ GET /dashboard 200 in 29ms (next.js: 906µs, application-code: 28ms)
+ GET /dashboard 200 in 133ms (next.js: 5ms, application-code: 128ms)
+ GET /dashboard/image-pairs 200 in 864ms (next.js: 754ms, application-code: 110ms)
+ GET /dashboard/image-match 200 in 455ms (next.js: 344ms, application-code: 110ms)
+ GET /dashboard/image-pairs 200 in 109ms (next.js: 3ms, application-code: 107ms)
+ POST /dashboard/image-pairs 200 in 72ms (next.js: 5ms, application-code: 67ms)
+  └─ ƒ backfillMissingEmbeddings({"message":"","ok":false}, {}) in 16ms lib/image-recognition/actions.ts
+ GET /dashboard/image-match 200 in 218ms (next.js: 30ms, application-code: 188ms)
+ GET /dashboard/image-pairs 200 in 112ms (next.js: 5ms, application-code: 108ms)
+ GET /dashboard/image-match 200 in 90ms (next.js: 3ms, application-code: 87ms)
+ GET /dashboard/image-pairs 200 in 111ms (next.js: 3ms, application-code: 108ms)
+  Reload env: .env.local
+ GET /dashboard/image-pairs 200 in 335ms (next.js: 170ms, application-code: 165ms)
+  Reload env: .env.local
+ GET /dashboard/image-pairs 200 in 244ms (next.js: 89ms, application-code: 155ms)
+  Reload env: .env.local
+ GET /dashboard/image-pairs 200 in 176ms (next.js: 68ms, application-code: 108ms)
+  Reload env: .env.local
+ GET /dashboard/image-pairs 200 in 179ms (next.js: 66ms, application-code: 114ms)
+  Reload env: .env.local
+ GET /dashboard/image-pairs 200 in 189ms (next.js: 67ms, application-code: 122ms)
+  Reload env: .env.local
+ GET /dashboard/image-pairs 200 in 396ms (next.js: 180ms, application-code: 216ms)
+  Reload env: .env.local
+ GET /dashboard/image-pairs 200 in 182ms (next.js: 72ms, application-code: 110ms)
+  Reload env: .env.local
+ GET /dashboard/image-pairs 200 in 215ms (next.js: 69ms, application-code: 146ms)
+ GET /dashboard/image-pairs 200 in 184ms (next.js: 64ms, application-code: 120ms)
+  Reload env: .env.local
+ GET /dashboard/image-pairs 200 in 248ms (next.js: 90ms, application-code: 158ms)
+  Reload env: .env.local
+ GET /dashboard/image-pairs 200 in 209ms (next.js: 72ms, application-code: 137ms)
+  Reload env: .env.local
+⨯ Error: MONGODB_URI is not set. Add it to .env.local.
+    at module evaluation (lib/mongodb.ts:6:9)
+    at module evaluation (lib/auth.ts:7:1)
+    at module evaluation (app/dashboard/layout.tsx:7:1)
+    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__0s-mbbt._.js:809:47)
+  4 |
+  5 | if (!uri) {
+> 6 |   throw new Error("MONGODB_URI is not set. Add it to .env.local.")
+    |         ^
+  7 | }
+  8 |
+  9 | const dbName = process.env.MONGODB_DB ?? "dentistimgreco"
+⨯ Error: MONGODB_URI is not set. Add it to .env.local.
+    at module evaluation (lib/mongodb.ts:6:9)
+    at module evaluation (lib/auth.ts:7:1)
+    at module evaluation (app/dashboard/layout.tsx:7:1)
+    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__0s-mbbt._.js:809:47)
+  4 |
+  5 | if (!uri) {
+> 6 |   throw new Error("MONGODB_URI is not set. Add it to .env.local.")
+    |         ^
+  7 | }
+  8 |
+  9 | const dbName = process.env.MONGODB_DB ?? "dentistimgreco" {
+  page: '/dashboard/image-pairs'
+}
+ GET /dashboard/image-pairs 500 in 1443ms (next.js: 1373ms, application-code: 70ms)
+⨯ Error: MONGODB_URI is not set. Add it to .env.local.
+    at module evaluation (lib/mongodb.ts:6:9)
+    at module evaluation (lib/auth.ts:7:1)
+    at module evaluation (app/dashboard/layout.tsx:7:1)
+    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__0s-mbbt._.js:809:47)
+  4 |
+  5 | if (!uri) {
+> 6 |   throw new Error("MONGODB_URI is not set. Add it to .env.local.")
+    |         ^
+  7 | }
+  8 |
+  9 | const dbName = process.env.MONGODB_DB ?? "dentistimgreco" {
+  page: '/dashboard/image-pairs'
+}
+⨯ Error: MONGODB_URI is not set. Add it to .env.local.
+    at module evaluation (lib/mongodb.ts:6:9)
+    at module evaluation (lib/auth.ts:7:1)
+    at module evaluation (app/dashboard/layout.tsx:7:1)
+    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__0s-mbbt._.js:809:47)
+  4 |
+  5 | if (!uri) {
+> 6 |   throw new Error("MONGODB_URI is not set. Add it to .env.local.")
+    |         ^
+  7 | }
+  8 |
+  9 | const dbName = process.env.MONGODB_DB ?? "dentistimgreco" {
+  page: '/dashboard/image-pairs'
+}
+ GET /dashboard/image-pairs 500 in 323ms (next.js: 318ms, application-code: 5ms)
+[browser] Uncaught Error: MONGODB_URI is not set. Add it to .env.local.
+    at module evaluation (lib/mongodb.ts:6:9)
+    at module evaluation (lib/auth.ts:7:1)
+    at module evaluation (app/dashboard/layout.tsx:7:1)
+    at module evaluation (app/dashboard/layout.tsx:55:1)
+  4 |
+  5 | if (!uri) {
+> 6 |   throw new Error("MONGODB_URI is not set. Add it to .env.local.")
+    |         ^
+  7 | }
+  8 |
+  9 | const dbName = process.env.MONGODB_DB ?? "dentistimgreco"
+  Reload env: .env.local
+  Reload env: .env.local
+  Reload env: .env.local
+  Reload env: .env.local
+Persisting failed: Unable to write SST file 00000215.sst
+
+Caused by:
+    0: Failed to write value block
+    1: Failed to write block data
+    2: No space left on device (os error 28)
+  Reload env: .env.local
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+  Reload env: .env.local
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+[?25h
+ ELIFECYCLE  Command failed with exit code 143.

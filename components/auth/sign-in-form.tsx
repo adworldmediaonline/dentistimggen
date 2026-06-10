@@ -21,7 +21,6 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
@@ -35,13 +34,11 @@ type SignInValues = z.infer<typeof signInSchema>
 
 interface SignInFormProps {
   callbackUrl: string
-  hasGoogleAuth: boolean
 }
 
-export function SignInForm({ callbackUrl, hasGoogleAuth }: SignInFormProps) {
+export function SignInForm({ callbackUrl }: SignInFormProps) {
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
-  const [isGooglePending, setIsGooglePending] = useState(false)
   const safeCallbackUrl = callbackUrl.startsWith("/") ? callbackUrl : "/dashboard"
 
   const form = useForm<SignInValues>({
@@ -58,7 +55,6 @@ export function SignInForm({ callbackUrl, hasGoogleAuth }: SignInFormProps) {
     const { error } = await authClient.signIn.email({
       email,
       password: values.password,
-      callbackURL: `${window.location.origin}${safeCallbackUrl}`,
     })
 
     if (error) {
@@ -68,15 +64,6 @@ export function SignInForm({ callbackUrl, hasGoogleAuth }: SignInFormProps) {
 
     router.replace(safeCallbackUrl)
     router.refresh()
-  }
-
-  async function continueWithGoogle() {
-    setIsGooglePending(true)
-    await authClient.signIn.social({
-      provider: "google",
-      callbackURL: `${window.location.origin}${safeCallbackUrl}`,
-    })
-    setIsGooglePending(false)
   }
 
   return (
@@ -95,10 +82,7 @@ export function SignInForm({ callbackUrl, hasGoogleAuth }: SignInFormProps) {
           <FieldGroup className="gap-5">
             {formError ? (
               <div role="alert" className="rounded-3xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-                {formError}{" "}
-                <Link href={`/verify-email?email=${encodeURIComponent(form.getValues("email"))}`} className="font-medium underline-offset-4 hover:underline">
-                  Verify email
-                </Link>
+                {formError}
               </div>
             ) : null}
 
@@ -142,21 +126,6 @@ export function SignInForm({ callbackUrl, hasGoogleAuth }: SignInFormProps) {
             <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? "Signing in..." : "Sign in"}
             </Button>
-
-            {hasGoogleAuth ? (
-              <>
-                <FieldSeparator>Or</FieldSeparator>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  disabled={isGooglePending}
-                  onClick={continueWithGoogle}
-                >
-                  {isGooglePending ? "Opening Google..." : "Continue with Google"}
-                </Button>
-              </>
-            ) : null}
 
             <p className="text-center text-sm text-muted-foreground">
               Need the first admin account?{" "}

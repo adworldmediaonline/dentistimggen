@@ -29,7 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { IMAGE_ASSET_KIND, IMAGE_PAIR_STATUS } from "@/lib/image-recognition/constants"
-import { prisma } from "@/lib/prisma"
+import { collections, type ImageAssetDoc } from "@/lib/mongodb"
 
 function statusVariant(status: string) {
   if (status === IMAGE_PAIR_STATUS.ready) {
@@ -46,17 +46,37 @@ function statusVariant(status: string) {
 export default async function ImagePairsPage() {
   await connection()
 
-  const pairs = await prisma.imagePair.findMany({
-    where: {
-      status: {
-        not: IMAGE_PAIR_STATUS.archived,
-      },
-    },
-    orderBy: { createdAt: "desc" },
-    include: {
-      assets: true,
-    },
-  })
+  const { imagePairs, imageAssets } = await collections()
+  const pairDocs = await imagePairs
+    .find({ status: { $ne: IMAGE_PAIR_STATUS.archived } })
+    .sort({ createdAt: -1 })
+    .toArray()
+
+  const assetDocs = await imageAssets
+    .find({ pairId: { $in: pairDocs.map((p) => p._id) } })
+    .toArray()
+
+  const assetsByPair = new Map<string, ImageAssetDoc[]>()
+  for (const asset of assetDocs) {
+    const list = assetsByPair.get(asset.pairId) ?? []
+    list.push(asset)
+    assetsByPair.set(asset.pairId, list)
+  }
+
+  const pairs = pairDocs.map((pair) => ({
+    id: pair._id,
+    title: pair.title,
+    notes: pair.notes,
+    tags: pair.tags,
+    status: pair.status,
+    assets: (assetsByPair.get(pair._id) ?? []).map((asset) => ({
+      id: asset._id,
+      kind: asset.kind,
+      url: asset.url,
+      width: asset.width,
+      height: asset.height,
+    })),
+  }))
 
   return (
     <main className="flex flex-1 flex-col">

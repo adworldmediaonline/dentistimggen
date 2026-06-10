@@ -1,100 +1,124 @@
-import { Prisma } from "@/app/generated/prisma/client"
-import { IMAGE_PAIR_STATUS } from "@/lib/image-recognition/constants"
-import { toPgVector } from "@/lib/image-recognition/embedding-service"
+import { IMAGE_ASSET_KIND, IMAGE_PAIR_STATUS } from "@/lib/image-recognition/constants"
+import { cosineSimilarity } from "@/lib/image-recognition/embedding-service"
 import type { AfterMatchHit, MatchCandidate } from "@/lib/image-recognition/types"
-import { prisma } from "@/lib/prisma"
+import { collections, type ImageAssetDoc } from "@/lib/mongodb"
 
-interface MatchRow {
+interface ScoredEmbedding {
   pairId: string
-  title: string
-  notes: string | null
-  tags: string[]
+  assetId: string
   score: number
-  beforeUrl: string
-  beforeWidth: number
-  beforeHeight: number
-  afterUrl: string | null
-  afterWidth: number | null
-  afterHeight: number | null
+}
+
+/**
+ * Fetch ready embeddings for the given asset kind on non-archived/ready pairs,
+ * score them against the query vector with cosine similarity, and return the
+ * top `limit` (highest score first). The dataset is small (admin-curated
+ * before/after pairs) and embeddings are only 64-dim, so ranking in app code is
+ * fast and avoids needing Atlas $vectorSearch.
+ */
+async function scoreEmbeddings(
+  vector: number[],
+  kind: typeof IMAGE_ASSET_KIND.before | typeof IMAGE_ASSET_KIND.after,
+  limit: number
+): Promise<ScoredEmbedding[]> {
+  const { imageEmbeddings, imageAssets, imagePairs } = await collections()
+
+  // Only consider embeddings whose asset is of the requested kind and whose
+  // pair is ready.
+  const readyPairIds = (
+    await imagePairs.find({ status: IMAGE_PAIR_STATUS.ready }, { projection: { _id: 1 } }).toArray()
+  ).map((p) => p._id)
+
+  if (readyPairIds.length === 0) {
+    return []
+  }
+
+  const kindAssetIds = (
+    await imageAssets
+      .find({ kind, pairId: { $in: readyPairIds } }, { projection: { _id: 1 } })
+      .toArray()
+  ).map((a) => a._id)
+
+  if (kindAssetIds.length === 0) {
+    return []
+  }
+
+  const embeddings = await imageEmbeddings
+    .find({ status: "ready", assetId: { $in: kindAssetIds } })
+    .toArray()
+
+  return embeddings
+    .map((e) => ({
+      pairId: e.pairId,
+      assetId: e.assetId,
+      score: cosineSimilarity(vector, e.embedding),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+}
+
+function assetView(asset: ImageAssetDoc | undefined) {
+  if (!asset) {
+    return null
+  }
+  return { url: asset.url, width: asset.width, height: asset.height }
 }
 
 export async function findClosestBeforeImages(vector: number[], limit = 3): Promise<MatchCandidate[]> {
-  const pgVector = toPgVector(vector)
-  const vectorSql = Prisma.raw(`'${pgVector}'::vector`)
+  const scored = await scoreEmbeddings(vector, IMAGE_ASSET_KIND.before, limit)
+  if (scored.length === 0) {
+    return []
+  }
 
-  const rows = await prisma.$queryRaw<MatchRow[]>(Prisma.sql`
-    SELECT
-      p.id AS "pairId",
-      p.title,
-      p.notes,
-      p.tags,
-      1 - (e.embedding <=> ${vectorSql}) AS score,
-      before_asset.url AS "beforeUrl",
-      before_asset.width AS "beforeWidth",
-      before_asset.height AS "beforeHeight",
-      after_asset.url AS "afterUrl",
-      after_asset.width AS "afterWidth",
-      after_asset.height AS "afterHeight"
-    FROM "imageEmbedding" e
-    INNER JOIN "imagePair" p ON p.id = e."pairId"
-    INNER JOIN "imageAsset" before_asset ON before_asset.id = e."assetId"
-    LEFT JOIN "imageAsset" after_asset ON after_asset."pairId" = p.id AND after_asset.kind = 'after'
-    WHERE p.status = ${IMAGE_PAIR_STATUS.ready}
-      AND e.status = 'ready'
-      AND before_asset.kind = 'before'
-    ORDER BY e.embedding <=> ${vectorSql}
-    LIMIT ${limit}
-  `)
+  const { imagePairs, imageAssets } = await collections()
+  const pairIds = scored.map((s) => s.pairId)
 
-  return rows.map((row) => ({
-    pairId: row.pairId,
-    title: row.title,
-    notes: row.notes,
-    tags: row.tags,
-    score: Number(row.score),
-    beforeAsset: {
-      url: row.beforeUrl,
-      width: row.beforeWidth,
-      height: row.beforeHeight,
-    },
-    afterAsset: row.afterUrl
-      ? {
-          url: row.afterUrl,
-          width: row.afterWidth ?? 0,
-          height: row.afterHeight ?? 0,
-        }
-      : null,
-  }))
-}
+  const pairs = await imagePairs.find({ _id: { $in: pairIds } }).toArray()
+  const assets = await imageAssets.find({ pairId: { $in: pairIds } }).toArray()
 
-interface AfterMatchRow {
-  pairId: string
-  title: string
-  score: number
+  const pairById = new Map(pairs.map((p) => [p._id, p]))
+  const beforeByPair = new Map(
+    assets.filter((a) => a.kind === IMAGE_ASSET_KIND.before).map((a) => [a.pairId, a])
+  )
+  const afterByPair = new Map(
+    assets.filter((a) => a.kind === IMAGE_ASSET_KIND.after).map((a) => [a.pairId, a])
+  )
+
+  const candidates: MatchCandidate[] = []
+  for (const hit of scored) {
+    const pair = pairById.get(hit.pairId)
+    const before = assetView(beforeByPair.get(hit.pairId))
+    if (!pair || !before) {
+      continue
+    }
+    candidates.push({
+      pairId: pair._id,
+      title: pair.title,
+      notes: pair.notes,
+      tags: pair.tags,
+      score: hit.score,
+      beforeAsset: before,
+      afterAsset: assetView(afterByPair.get(hit.pairId)),
+    })
+  }
+
+  return candidates
 }
 
 export async function findClosestAfterImages(vector: number[], limit = 1): Promise<AfterMatchHit[]> {
-  const pgVector = toPgVector(vector)
-  const vectorSql = Prisma.raw(`'${pgVector}'::vector`)
+  const scored = await scoreEmbeddings(vector, IMAGE_ASSET_KIND.after, limit)
+  if (scored.length === 0) {
+    return []
+  }
 
-  const rows = await prisma.$queryRaw<AfterMatchRow[]>(Prisma.sql`
-    SELECT
-      p.id AS "pairId",
-      p.title,
-      1 - (e.embedding <=> ${vectorSql}) AS score
-    FROM "imageEmbedding" e
-    INNER JOIN "imagePair" p ON p.id = e."pairId"
-    INNER JOIN "imageAsset" after_asset ON after_asset.id = e."assetId"
-    WHERE p.status = ${IMAGE_PAIR_STATUS.ready}
-      AND e.status = 'ready'
-      AND after_asset.kind = 'after'
-    ORDER BY e.embedding <=> ${vectorSql}
-    LIMIT ${limit}
-  `)
+  const { imagePairs } = await collections()
+  const pairs = await imagePairs.find({ _id: { $in: scored.map((s) => s.pairId) } }).toArray()
+  const pairById = new Map(pairs.map((p) => [p._id, p]))
 
-  return rows.map((row) => ({
-    pairId: row.pairId,
-    title: row.title,
-    score: Number(row.score),
-  }))
+  return scored
+    .map((hit) => {
+      const pair = pairById.get(hit.pairId)
+      return pair ? { pairId: pair._id, title: pair.title, score: hit.score } : null
+    })
+    .filter((hit): hit is AfterMatchHit => hit !== null)
 }

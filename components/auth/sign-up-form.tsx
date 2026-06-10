@@ -22,7 +22,6 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
@@ -35,10 +34,9 @@ const signUpSchema = z.object({
 
 type SignUpValues = z.infer<typeof signUpSchema>
 
-export function SignUpForm({ hasGoogleAuth }: { hasGoogleAuth: boolean }) {
+export function SignUpForm() {
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
-  const [isGooglePending, setIsGooglePending] = useState(false)
 
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema as never),
@@ -56,7 +54,6 @@ export function SignUpForm({ hasGoogleAuth }: { hasGoogleAuth: boolean }) {
       name: values.name,
       email,
       password: values.password,
-      callbackURL: `${window.location.origin}/dashboard`,
     })
 
     if (error) {
@@ -64,16 +61,8 @@ export function SignUpForm({ hasGoogleAuth }: { hasGoogleAuth: boolean }) {
       return
     }
 
-    router.push(`/verify-email?email=${encodeURIComponent(email)}`)
-  }
-
-  async function continueWithGoogle() {
-    setIsGooglePending(true)
-    await authClient.signIn.social({
-      provider: "google",
-      callbackURL: `${window.location.origin}/dashboard`,
-    })
-    setIsGooglePending(false)
+    router.replace("/dashboard")
+    router.refresh()
   }
 
   return (
@@ -155,21 +144,6 @@ export function SignUpForm({ hasGoogleAuth }: { hasGoogleAuth: boolean }) {
             <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? "Creating account..." : "Create account"}
             </Button>
-
-            {hasGoogleAuth ? (
-              <>
-                <FieldSeparator>Or</FieldSeparator>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  disabled={isGooglePending}
-                  onClick={continueWithGoogle}
-                >
-                  {isGooglePending ? "Opening Google..." : "Continue with Google"}
-                </Button>
-              </>
-            ) : null}
 
             <p className="text-center text-sm text-muted-foreground">
               Already have access?{" "}
