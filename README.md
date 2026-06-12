@@ -22,16 +22,23 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Image Recognition Setup
 
-Before using the admin image-pair upload flow, configure Cloudinary and run the Prisma migration that enables `pgvector`:
+Before using the admin image-pair upload flow, configure Cloudinary, Gemini, and run the Drizzle migrations that enable `pgvector`:
 
 ```bash
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
 CLOUDINARY_CLOUD_NAME="your-cloud-name"
 CLOUDINARY_API_KEY="your-api-key"
 CLOUDINARY_API_SECRET="your-api-secret"
 CLOUDINARY_FOLDER="dentist-image-reco"
+GEMINI_API_KEY="your-gemini-api-key"
 ```
 
-The app stores original images in Cloudinary, keeps metadata in Postgres, and indexes before-image embeddings with `pgvector` for nearest-match search.
+```bash
+npm run db:migrate
+npm run db:import-cloudinary-pairs
+```
+
+The app stores original images in Cloudinary, keeps metadata in Postgres, and indexes before/after image embeddings with Gemini `gemini-embedding-2` plus `pgvector` for nearest-match search.
 
 ## Learn More
 

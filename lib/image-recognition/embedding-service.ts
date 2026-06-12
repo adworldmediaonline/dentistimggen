@@ -1,6 +1,27 @@
-import sharp from "sharp"
+import { GoogleGenAI } from "@google/genai"
+import * as z from "zod/v4"
 
 import { EMBEDDING_DIMENSION, EMBEDDING_MODEL } from "@/lib/image-recognition/constants"
+
+const geminiEmbeddingResponseSchema = z
+  .object({
+    embedding: z
+      .object({
+        values: z.array(z.number()),
+      })
+      .optional(),
+    embeddings: z
+      .array(
+        z.object({
+          values: z.array(z.number()),
+        })
+      )
+      .optional(),
+  })
+  .transform((value) => value.embedding?.values ?? value.embeddings?.[0]?.values)
+  .pipe(z.array(z.number()).length(EMBEDDING_DIMENSION))
+
+let geminiClient: GoogleGenAI | null = null
 
 export interface ImageEmbedding {
   model: string
@@ -8,22 +29,41 @@ export interface ImageEmbedding {
   vector: number[]
 }
 
-export async function generateImageEmbedding(buffer: Buffer): Promise<ImageEmbedding> {
-  const pixels = await sharp(buffer)
-    .rotate()
-    .resize(8, 8, { fit: "fill" })
-    .greyscale()
-    .raw()
-    .toBuffer()
+function getGeminiApiKey() {
+  const apiKey = process.env.GEMINI_API_KEY
 
-  const values = Array.from(pixels, (value) => value / 255)
-  const mean = values.reduce((total, value) => total + value, 0) / values.length
-  const centered = values.map((value) => value - mean)
-  const magnitude = Math.sqrt(centered.reduce((total, value) => total + value * value, 0)) || 1
-  const vector = centered.map((value) => value / magnitude)
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is required to generate image embeddings.")
+  }
+
+  return apiKey
+}
+
+function getGeminiClient() {
+  geminiClient ??= new GoogleGenAI({ apiKey: getGeminiApiKey() })
+  return geminiClient
+}
+
+export async function generateImageEmbedding(buffer: Buffer, mimeType = "image/jpeg"): Promise<ImageEmbedding> {
+  const response = await getGeminiClient().models.embedContent({
+    model: EMBEDDING_MODEL.geminiEmbedding2,
+    contents: [
+      {
+        inlineData: {
+          mimeType,
+          data: buffer.toString("base64"),
+        },
+      },
+    ],
+    config: {
+      outputDimensionality: EMBEDDING_DIMENSION,
+    },
+  })
+
+  const vector = geminiEmbeddingResponseSchema.parse(response)
 
   return {
-    model: EMBEDDING_MODEL.localPerceptual,
+    model: EMBEDDING_MODEL.geminiEmbedding2,
     dimension: EMBEDDING_DIMENSION,
     vector,
   }

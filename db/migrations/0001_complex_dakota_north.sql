@@ -1,0 +1,1 @@
+ALTER TABLE "imageEmbedding" ALTER COLUMN "embedding" SET DATA TYPE vector(768);

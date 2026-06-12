@@ -76,8 +76,8 @@ Future Gemini image generation work should include:
 - React `19.2.4`
 - TypeScript with strict mode
 - Tailwind CSS v4 and shadcn/Radix UI components
-- Better Auth with Prisma adapter, admin plugin, and email OTP verification
-- Prisma `7.8.0` with PostgreSQL and `pgvector`
+- Better Auth with Drizzle adapter, admin plugin, and email OTP verification
+- Drizzle ORM with PostgreSQL and `pgvector`
 - Cloudinary for image storage
 - Resend for auth OTP emails
 - `sharp` for local perceptual image embeddings
@@ -90,12 +90,6 @@ Use pnpm through Corepack. If a global `pnpm` binary is not available, `corepack
 ```bash
 corepack prepare pnpm@10.34.1 --activate
 corepack pnpm install
-```
-
-Generate the Prisma client after dependencies are installed:
-
-```bash
-corepack pnpm exec prisma generate
 ```
 
 Run the development server:
@@ -135,26 +129,25 @@ GEMINI_API_KEY="future-image-generation-key"
 
 Notes:
 
-- `DATABASE_URL` is required even for `prisma generate` because `prisma.config.ts` resolves it when loading config.
 - Resend is required for email verification OTP delivery.
 - Google OAuth is enabled only when both Google env vars are present.
 - Cloudinary is required before image upload workflows can succeed.
-- `GEMINI_API_KEY` is listed for future image generation work; it is not used by the current codebase.
+- `GEMINI_API_KEY` is required for image embedding import and image-match searches.
 
 ## Database
 
-The schema lives in `prisma/schema.prisma`.
+The schema lives in `db/schema/`.
 
-The Prisma client is generated to `app/generated/prisma`. Do not edit those generated files directly; update the schema and run:
+Generate Drizzle migrations after schema changes:
 
 ```bash
-corepack pnpm exec prisma generate
+corepack pnpm db:generate
 ```
 
 Apply migrations locally:
 
 ```bash
-corepack pnpm exec prisma migrate dev
+corepack pnpm db:migrate
 ```
 
 The image-recognition migration enables `pgvector`:
@@ -165,10 +158,10 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 Your local Postgres user/database must support this extension. If migration fails around `vector`, install pgvector for the database server or use a Postgres image/provider that already supports it.
 
-Open Prisma Studio:
+Open Drizzle Studio:
 
 ```bash
-corepack pnpm studio
+corepack pnpm db:studio
 ```
 
 ## App Routes
@@ -255,17 +248,17 @@ This is required because the installed Next.js version has breaking changes comp
 
 ## Code Organization
 
-- `app/` contains App Router routes and generated Prisma client output.
+- `app/` contains App Router routes.
 - `components/ui/` contains shadcn/Radix primitives.
 - `components/auth/` contains auth forms.
 - `components/image-recognition/` contains upload, match, archive, backfill, and lightbox UI.
 - `components/app-sidebar.tsx`, `components/nav-main.tsx`, `components/nav-user.tsx`, and `components/site-header.tsx` build the dashboard shell.
 - `lib/auth.ts` configures Better Auth server behavior.
 - `lib/auth-client.ts` configures Better Auth client plugins.
-- `lib/prisma.ts` creates the Prisma client with the PostgreSQL adapter.
+- `lib/db.ts` creates the Drizzle/Postgres connection.
 - `lib/email.ts` sends OTP emails with Resend.
 - `lib/image-recognition/` owns image validation, storage, embedding, search, and server actions.
-- `prisma/migrations/` contains database migrations.
+- `db/migrations/` contains database migrations.
 
 ## Common Commands
 
@@ -274,9 +267,10 @@ corepack pnpm install
 corepack pnpm dev
 corepack pnpm lint
 corepack pnpm build
-corepack pnpm exec prisma generate
-corepack pnpm exec prisma migrate dev
-corepack pnpm studio
+corepack pnpm db:generate
+corepack pnpm db:migrate
+corepack pnpm db:studio
+corepack pnpm db:import-cloudinary-pairs
 ```
 
 There is no test script configured yet. Use lint and production build as the current baseline checks.
@@ -286,8 +280,8 @@ There is no test script configured yet. Use lint and production build as the cur
 1. Pull latest code.
 2. Run `corepack pnpm install`.
 3. Ensure `.env.local` has the required variables.
-4. Run `corepack pnpm exec prisma migrate dev`.
-5. Run `corepack pnpm exec prisma generate` if the schema changed.
+4. Run `corepack pnpm db:migrate`.
+5. Run `corepack pnpm db:generate` if the schema changed.
 6. Run `corepack pnpm dev`.
 7. Before handing off changes, run:
 
@@ -302,9 +296,9 @@ corepack pnpm build
 
 Use `corepack pnpm ...` or enable Corepack shims if your machine permits it.
 
-`PrismaConfigEnvError: Cannot resolve environment variable: DATABASE_URL`
+`DATABASE_URL is required to connect to Postgres`
 
-Add `DATABASE_URL` to `.env.local`. A placeholder can be used for client generation only, but migrations and runtime pages need a real database.
+Add `DATABASE_URL` to `.env.local`. Migrations and runtime pages need a real database.
 
 `type "vector" does not exist` or migration fails on pgvector
 
@@ -322,6 +316,6 @@ Dashboard redirects to `/unauthorized`
 
 The signed-in user is not an admin. The first registered user becomes admin automatically; later users need their `role` set to `admin`.
 
-Generated Prisma files changed
+Cloudinary import finds no pairs
 
-That is expected after `prisma generate`. Do not manually edit files under `app/generated/prisma`.
+Check that `CLOUDINARY_FOLDER` points to the folder containing `before-*` and `after-*` assets grouped under the same pair folder.

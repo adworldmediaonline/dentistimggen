@@ -8,6 +8,13 @@
       "when": 1781241636606,
       "tag": "0000_large_dragon_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781245151055,
+      "tag": "0001_complex_dakota_north",
+      "breakpoints": true
     }
   ]
 }

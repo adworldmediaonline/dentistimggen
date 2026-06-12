@@ -80,7 +80,7 @@ export const imageEmbedding = pgTable(
     model: text("model").notNull(),
     dimension: integer("dimension").notNull(),
     status: text("status").notNull().default("ready"),
-    embedding: vector("embedding", { dimensions: 64 }).notNull(),
+    embedding: vector("embedding", { dimensions: 768 }).notNull(),
     error: text("error"),
     createdAt: timestamp("createdAt", { precision: 3 }).notNull().defaultNow(),
     updatedAt: timestamp("updatedAt", { precision: 3 }).notNull(),

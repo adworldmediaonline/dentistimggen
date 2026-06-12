@@ -22,10 +22,10 @@ export const IMAGE_STORAGE_PROVIDER = {
 } as const
 
 export const EMBEDDING_MODEL = {
-  localPerceptual: "local-perceptual-v1",
+  geminiEmbedding2: "gemini-embedding-2",
 } as const
 
-export const EMBEDDING_DIMENSION = 64
+export const EMBEDDING_DIMENSION = 768
 export const IMAGE_MATCH_CONFIDENCE_THRESHOLD = 0.72
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 

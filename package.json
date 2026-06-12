@@ -14,13 +14,12 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:create-test-admin": "node scripts/create-test-admin.mjs",
-    "studio": "npx prisma studio"
+    "db:import-cloudinary-pairs": "node scripts/import-cloudinary-image-pairs.mjs"
   },
   "dependencies": {
-    "@better-auth/prisma-adapter": "^1.6.9",
+    "@google/genai": "^2.8.0",
     "@hookform/resolvers": "^5.2.2",
-    "@prisma/adapter-pg": "^7.8.0",
-    "@prisma/client": "^7.8.0",
+    "@tanstack/react-query": "^5.101.0",
     "better-auth": "^1.6.9",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.10.0",
@@ -54,7 +53,6 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
-    "prisma": "^7.8.0",
     "shadcn": "^4.4.0",
     "tailwindcss": "^4",
     "typescript": "^5"

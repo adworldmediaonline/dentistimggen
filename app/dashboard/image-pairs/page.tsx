@@ -1,7 +1,9 @@
 import { connection } from "next/server"
 import Image from "next/image"
 import { ImagesIcon } from "lucide-react"
+import { desc, eq, ne } from "drizzle-orm"
 
+import { imageAsset, imagePair } from "@/db/schema"
 import { ArchiveImagePairButton } from "@/components/image-recognition/archive-image-pair-button"
 import { BackfillEmbeddingsButton } from "@/components/image-recognition/backfill-embeddings-button"
 import { ImagePairForm } from "@/components/image-recognition/image-pair-form"
@@ -28,8 +30,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { db } from "@/lib/db"
 import { IMAGE_ASSET_KIND, IMAGE_PAIR_STATUS } from "@/lib/image-recognition/constants"
-import { prisma } from "@/lib/prisma"
+
+type ImagePairListItem = typeof imagePair.$inferSelect & {
+  tags: string[]
+  assets: (typeof imageAsset.$inferSelect)[]
+}
 
 function statusVariant(status: string) {
   if (status === IMAGE_PAIR_STATUS.ready) {
@@ -46,17 +53,36 @@ function statusVariant(status: string) {
 export default async function ImagePairsPage() {
   await connection()
 
-  const pairs = await prisma.imagePair.findMany({
-    where: {
-      status: {
-        not: IMAGE_PAIR_STATUS.archived,
-      },
-    },
-    orderBy: { createdAt: "desc" },
-    include: {
-      assets: true,
-    },
-  })
+  const pairRows = await db
+    .select()
+    .from(imagePair)
+    .leftJoin(imageAsset, eq(imageAsset.pairId, imagePair.id))
+    .where(ne(imagePair.status, IMAGE_PAIR_STATUS.archived))
+    .orderBy(desc(imagePair.createdAt))
+
+  const pairs = Array.from(
+    pairRows
+      .reduce((byId, row) => {
+        const existing = byId.get(row.imagePair.id)
+
+        if (existing) {
+          if (row.imageAsset) {
+            existing.assets.push(row.imageAsset)
+          }
+
+          return byId
+        }
+
+        byId.set(row.imagePair.id, {
+          ...row.imagePair,
+          tags: row.imagePair.tags ?? [],
+          assets: row.imageAsset ? [row.imageAsset] : [],
+        })
+
+        return byId
+      }, new Map<string, ImagePairListItem>())
+      .values()
+  )
 
   return (
     <main className="flex flex-1 flex-col">

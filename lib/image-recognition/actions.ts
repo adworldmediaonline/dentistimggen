@@ -3,8 +3,10 @@
 import { randomUUID } from "node:crypto"
 import { headers } from "next/headers"
 import { revalidatePath } from "next/cache"
+import { and, eq, inArray, isNull, ne, sql } from "drizzle-orm"
 
-import { Prisma } from "@/app/generated/prisma/client"
+import { imageAsset, imageEmbedding, imageMatchLog, imagePair } from "@/db/schema"
+import { db } from "@/lib/db"
 import {
   EMBEDDING_DIMENSION,
   IMAGE_ASSET_KIND,
@@ -18,7 +20,6 @@ import { findClosestAfterImages, findClosestBeforeImages } from "@/lib/image-rec
 import { storeImageAsset } from "@/lib/image-recognition/storage-service"
 import type { ActionResult, MatchResult, ProcessedImage } from "@/lib/image-recognition/types"
 import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
 
 async function requireAdminUserId() {
   const session = await auth.api.getSession({
@@ -57,9 +58,12 @@ async function createImageAsset({
   pairId: string
 }) {
   const storedImage = await storeImageAsset({ image, kind, pairId })
+  const now = new Date()
 
-  return prisma.imageAsset.create({
-    data: {
+  const [asset] = await db
+    .insert(imageAsset)
+    .values({
+      id: randomUUID(),
       pairId,
       kind,
       storageProvider: storedImage.provider,
@@ -71,23 +75,30 @@ async function createImageAsset({
       byteSize: image.byteSize,
       width: image.width,
       height: image.height,
-    },
-  })
+      createdAt: now,
+      updatedAt: now,
+    })
+    .returning()
+
+  return asset
 }
 
 async function insertImageEmbedding({
   pairId,
   assetId,
   buffer,
+  mimeType,
 }: {
   pairId: string
   assetId: string
   buffer: Buffer
+  mimeType: string
 }) {
-  const embedding = await generateImageEmbedding(buffer)
+  const embedding = await generateImageEmbedding(buffer, mimeType)
   const pgVector = toPgVector(embedding.vector)
+  const now = new Date()
 
-  await prisma.$executeRaw(Prisma.sql`
+  await db.execute(sql`
     INSERT INTO "imageEmbedding" (
       "id",
       "pairId",
@@ -106,9 +117,9 @@ async function insertImageEmbedding({
       ${embedding.model},
       ${EMBEDDING_DIMENSION},
       'ready',
-      ${Prisma.raw(`'${pgVector}'::vector`)},
-      CURRENT_TIMESTAMP,
-      CURRENT_TIMESTAMP
+      ${pgVector}::vector,
+      ${now},
+      ${now}
     )
   `)
 }
@@ -129,41 +140,38 @@ export async function createImagePair(_previousState: ActionResult, formData: Fo
     const beforeImage = await processImageFile(getImageFile(formData, "beforeImage"), "Before")
     const afterImage = await processImageFile(getImageFile(formData, "afterImage"), "After")
 
-    const duplicateBefore = await prisma.imageAsset.findFirst({
-      where: {
-        kind: IMAGE_ASSET_KIND.before,
-        checksum: beforeImage.checksum,
-        pair: {
-          status: {
-            not: IMAGE_PAIR_STATUS.archived,
-          },
-        },
-      },
-      select: {
-        pair: {
-          select: {
-            title: true,
-          },
-        },
-      },
-    })
+    const [duplicateBefore] = await db
+      .select({
+        title: imagePair.title,
+      })
+      .from(imageAsset)
+      .innerJoin(imagePair, eq(imagePair.id, imageAsset.pairId))
+      .where(
+        and(
+          eq(imageAsset.kind, IMAGE_ASSET_KIND.before),
+          eq(imageAsset.checksum, beforeImage.checksum),
+          ne(imagePair.status, IMAGE_PAIR_STATUS.archived)
+        )
+      )
+      .limit(1)
 
     if (duplicateBefore) {
-      return { ok: false, message: `This before image already exists in "${duplicateBefore.pair.title}".` }
+      return { ok: false, message: `This before image already exists in "${duplicateBefore.title}".` }
     }
 
-    const pair = await prisma.imagePair.create({
-      data: {
+    const [pair] = await db
+      .insert(imagePair)
+      .values({
+        id: randomUUID(),
         title,
         notes: notes.length > 0 ? notes : null,
         tags,
         status: IMAGE_PAIR_STATUS.processing,
         createdById,
-      },
-      select: {
-        id: true,
-      },
-    })
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning({ id: imagePair.id })
 
     pairId = pair.id
 
@@ -183,18 +191,20 @@ export async function createImagePair(_previousState: ActionResult, formData: Fo
       pairId: pair.id,
       assetId: beforeAsset.id,
       buffer: beforeImage.buffer,
+      mimeType: beforeImage.mimeType,
     })
 
     await insertImageEmbedding({
       pairId: pair.id,
       assetId: afterAsset.id,
       buffer: afterImage.buffer,
+      mimeType: afterImage.mimeType,
     })
 
-    await prisma.imagePair.update({
-      where: { id: pair.id },
-      data: { status: IMAGE_PAIR_STATUS.ready },
-    })
+    await db
+      .update(imagePair)
+      .set({ status: IMAGE_PAIR_STATUS.ready, updatedAt: new Date() })
+      .where(eq(imagePair.id, pair.id))
 
     revalidatePath("/dashboard")
     revalidatePath("/dashboard/image-pairs")
@@ -203,10 +213,10 @@ export async function createImagePair(_previousState: ActionResult, formData: Fo
     return { ok: true, message: "Before/after image pair uploaded and indexed." }
   } catch (error) {
     if (pairId) {
-      await prisma.imagePair.update({
-        where: { id: pairId },
-        data: { status: IMAGE_PAIR_STATUS.failed },
-      })
+      await db
+        .update(imagePair)
+        .set({ status: IMAGE_PAIR_STATUS.failed, updatedAt: new Date() })
+        .where(eq(imagePair.id, pairId))
     }
 
     return {
@@ -226,22 +236,24 @@ export async function backfillMissingEmbeddings(
   try {
     await requireAdminUserId()
 
-    const assets = await prisma.imageAsset.findMany({
-      where: {
-        kind: {
-          in: [IMAGE_ASSET_KIND.before, IMAGE_ASSET_KIND.after],
-        },
-        embedding: {
-          is: null,
-        },
-        pair: {
-          status: {
-            not: IMAGE_PAIR_STATUS.archived,
-          },
-        },
-      },
-      take: 50,
-    })
+    const assets = await db
+      .select({
+        id: imageAsset.id,
+        pairId: imageAsset.pairId,
+        url: imageAsset.url,
+        mimeType: imageAsset.mimeType,
+      })
+      .from(imageAsset)
+      .innerJoin(imagePair, eq(imagePair.id, imageAsset.pairId))
+      .leftJoin(imageEmbedding, eq(imageEmbedding.assetId, imageAsset.id))
+      .where(
+        and(
+          inArray(imageAsset.kind, [IMAGE_ASSET_KIND.before, IMAGE_ASSET_KIND.after]),
+          isNull(imageEmbedding.id),
+          ne(imagePair.status, IMAGE_PAIR_STATUS.archived)
+        )
+      )
+      .limit(50)
 
     let indexedCount = 0
 
@@ -249,10 +261,10 @@ export async function backfillMissingEmbeddings(
       const response = await fetch(asset.url)
 
       if (!response.ok) {
-        await prisma.imagePair.update({
-          where: { id: asset.pairId },
-          data: { status: IMAGE_PAIR_STATUS.failed },
-        })
+        await db
+          .update(imagePair)
+          .set({ status: IMAGE_PAIR_STATUS.failed, updatedAt: new Date() })
+          .where(eq(imagePair.id, asset.pairId))
         continue
       }
 
@@ -262,12 +274,13 @@ export async function backfillMissingEmbeddings(
         pairId: asset.pairId,
         assetId: asset.id,
         buffer,
+        mimeType: asset.mimeType,
       })
 
-      await prisma.imagePair.update({
-        where: { id: asset.pairId },
-        data: { status: IMAGE_PAIR_STATUS.ready },
-      })
+      await db
+        .update(imagePair)
+        .set({ status: IMAGE_PAIR_STATUS.ready, updatedAt: new Date() })
+        .where(eq(imagePair.id, asset.pairId))
 
       indexedCount += 1
     }
@@ -296,10 +309,10 @@ export async function archiveImagePair(formData: FormData): Promise<void> {
     return
   }
 
-  await prisma.imagePair.update({
-    where: { id: pairId },
-    data: { status: IMAGE_PAIR_STATUS.archived },
-  })
+  await db
+    .update(imagePair)
+    .set({ status: IMAGE_PAIR_STATUS.archived, updatedAt: new Date() })
+    .where(eq(imagePair.id, pairId))
 
   revalidatePath("/dashboard")
   revalidatePath("/dashboard/image-pairs")
@@ -310,7 +323,7 @@ export async function findImageMatch(_previousState: MatchResult, formData: Form
   try {
     const requestedById = await requireAdminUserId()
     const queryImage = await processImageFile(getImageFile(formData, "queryImage"), "Query")
-    const embedding = await generateImageEmbedding(queryImage.buffer)
+    const embedding = await generateImageEmbedding(queryImage.buffer, queryImage.mimeType)
 
     const [beforeCandidates, afterCandidates] = await Promise.all([
       findClosestBeforeImages(embedding.vector, 1),
@@ -327,8 +340,8 @@ export async function findImageMatch(_previousState: MatchResult, formData: Form
     )
 
     if (matchesAfterImage) {
-      await prisma.imageMatchLog.create({
-        data: {
+      await db.insert(imageMatchLog).values({
+          id: randomUUID(),
           requestedById,
           matchedPairId: null,
           queryChecksum: queryImage.checksum,
@@ -336,7 +349,7 @@ export async function findImageMatch(_previousState: MatchResult, formData: Form
           queryByteSize: queryImage.byteSize,
           similarityScore: afterHit?.score,
           status: IMAGE_MATCH_STATUS.wrongImageType,
-        },
+          createdAt: new Date(),
       })
 
       return {
@@ -348,8 +361,8 @@ export async function findImageMatch(_previousState: MatchResult, formData: Form
 
     const isConfidentMatch = Boolean(candidate && candidate.score >= IMAGE_MATCH_CONFIDENCE_THRESHOLD)
 
-    await prisma.imageMatchLog.create({
-      data: {
+    await db.insert(imageMatchLog).values({
+        id: randomUUID(),
         requestedById,
         matchedPairId: isConfidentMatch ? candidate?.pairId : null,
         queryChecksum: queryImage.checksum,
@@ -357,7 +370,7 @@ export async function findImageMatch(_previousState: MatchResult, formData: Form
         queryByteSize: queryImage.byteSize,
         similarityScore: candidate?.score,
         status: isConfidentMatch ? IMAGE_MATCH_STATUS.matched : IMAGE_MATCH_STATUS.noConfidentMatch,
-      },
+        createdAt: new Date(),
     })
 
     if (!candidate) {
