@@ -1,20 +1,18 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useState } from "react"
 import { useMutation } from "@tanstack/react-query"
 import {
   AlertCircleIcon,
   CheckCircle2Icon,
-  ImageIcon,
   Loader2Icon,
   ScanSearchIcon,
-  UploadCloudIcon,
-  XIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 import * as z from "zod/v4"
 
 import { BeforeAfterLightbox } from "@/components/image-recognition/before-after-lightbox"
+import { ImageFileInput } from "@/components/image-recognition/image-file-input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -24,14 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { ACCEPTED_IMAGE_TYPES } from "@/lib/image-recognition/constants"
+import { FieldGroup } from "@/components/ui/field"
 import type { MatchCandidate, MatchResult } from "@/lib/image-recognition/types"
 
 const initialState: MatchResult = {
@@ -60,13 +51,7 @@ async function submitImageMatch(formData: FormData): Promise<MatchResult> {
   return result
 }
 
-function formatFileSize(bytes: number) {
-  if (bytes < 1024 * 1024) {
-    return `${Math.max(1, Math.round(bytes / 1024))} KB`
-  }
 
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
 
 function MatchCandidateCard({ candidate }: { candidate: MatchCandidate }) {
   return (
@@ -92,26 +77,9 @@ function MatchCandidateCard({ candidate }: { candidate: MatchCandidate }) {
 }
 
 export function ImageMatchForm() {
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [state, setState] = useState<MatchResult>(initialState)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [fileError, setFileError] = useState<string | null>(null)
-
-  const previewUrl = useMemo(() => {
-    if (!selectedFile) {
-      return null
-    }
-
-    return URL.createObjectURL(selectedFile)
-  }, [selectedFile])
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl)
-      }
-    }
-  }, [previewUrl])
 
   const matchMutation = useMutation({
     mutationFn: submitImageMatch,
@@ -141,28 +109,7 @@ export function ImageMatchForm() {
   function handleFileChange(file: File | null) {
     setState(initialState)
     setFileError(null)
-
-    if (!file) {
-      setSelectedFile(null)
-      return
-    }
-
-    if (!ACCEPTED_IMAGE_TYPES.includes(file.type as (typeof ACCEPTED_IMAGE_TYPES)[number])) {
-      setSelectedFile(null)
-      setFileError("Choose a JPEG, PNG, or WebP image.")
-      return
-    }
-
     setSelectedFile(file)
-  }
-
-  function clearSelectedFile() {
-    setSelectedFile(null)
-    setFileError(null)
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
-    }
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -211,64 +158,15 @@ export function ImageMatchForm() {
                 </div>
               ) : null}
 
-              <Field data-invalid={Boolean(fileError)}>
-                <FieldLabel htmlFor="queryImage">Before image</FieldLabel>
-                <Input
-                  ref={fileInputRef}
-                  id="queryImage"
-                  name="queryImage"
-                  type="file"
-                  accept={ACCEPTED_IMAGE_TYPES.join(",")}
-                  className="sr-only"
-                  onChange={(event) => handleFileChange(event.target.files?.[0] ?? null)}
-                />
-                <div className="rounded-2xl border border-dashed bg-muted/30 p-4">
-                  {selectedFile ? (
-                    <div className="flex gap-4">
-                      <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-background">
-                        {previewUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={previewUrl} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <ImageIcon className="size-6 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium">{selectedFile.name}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">
-                          {selectedFile.type} · {formatFileSize(selectedFile.size)}
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                            Change image
-                          </Button>
-                          <Button type="button" variant="ghost" size="sm" onClick={clearSelectedFile} disabled={isUploading}>
-                            <XIcon className="size-4" />
-                            Remove
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      className="flex w-full flex-col items-center justify-center gap-3 rounded-xl px-4 py-8 text-center transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploading}
-                    >
-                      <span className="flex size-11 items-center justify-center rounded-3xl bg-background text-muted-foreground">
-                        <UploadCloudIcon className="size-5" />
-                      </span>
-                      <span className="text-sm font-medium">Choose before image</span>
-                      <span className="text-xs text-muted-foreground">JPEG, PNG, or WebP up to 10 MB</span>
-                    </button>
-                  )}
-                </div>
-                {fileError ? <p className="text-sm text-destructive">{fileError}</p> : null}
-                <FieldDescription>
-                  Use the same angle, lighting, and crop as your stored before photos for the most reliable match.
-                </FieldDescription>
-              </Field>
+              <ImageFileInput
+                id="queryImage"
+                name="queryImage"
+                label="Before image"
+                description="Use the same angle, lighting, and crop as your stored before photos for the most reliable match."
+                error={fileError}
+                disabled={isUploading}
+                onChange={handleFileChange}
+              />
 
               <Button type="submit" className="w-full" disabled={isUploading || !selectedFile}>
                 {isUploading ? (

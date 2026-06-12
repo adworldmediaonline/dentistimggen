@@ -14,7 +14,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:create-test-admin": "node scripts/create-test-admin.mjs",
-    "db:import-cloudinary-pairs": "node scripts/import-cloudinary-image-pairs.mjs"
+    "db:import-cloudinary-pairs": "node scripts/import-cloudinary-image-pairs.mjs",
+    "db:split-import-local": "node scripts/split-and-import-local-images.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.8.0",

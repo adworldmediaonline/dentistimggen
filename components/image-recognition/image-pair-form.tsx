@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef } from "react"
 import { UploadCloudIcon } from "lucide-react"
 
+import { ImageFileInput } from "@/components/image-recognition/image-file-input"
 import { SubmitButton } from "@/components/image-recognition/submit-button"
 import {
   Card,
@@ -19,7 +20,6 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { ACCEPTED_IMAGE_TYPES } from "@/lib/image-recognition/constants"
 import { createImagePair } from "@/lib/image-recognition/actions"
 import type { ActionResult } from "@/lib/image-recognition/types"
 
@@ -72,17 +72,19 @@ export function ImagePairForm() {
             </Field>
 
             <div className="grid gap-5 md:grid-cols-2">
-              <Field>
-                <FieldLabel htmlFor="beforeImage">Before image</FieldLabel>
-                <Input id="beforeImage" name="beforeImage" type="file" accept={ACCEPTED_IMAGE_TYPES.join(",")} required />
-                <FieldDescription>JPEG, PNG, or WebP up to 10 MB.</FieldDescription>
-              </Field>
+              <ImageFileInput
+                id="beforeImage"
+                name="beforeImage"
+                label="Before image"
+                description="JPEG, PNG, or WebP up to 10 MB."
+              />
 
-              <Field>
-                <FieldLabel htmlFor="afterImage">After image</FieldLabel>
-                <Input id="afterImage" name="afterImage" type="file" accept={ACCEPTED_IMAGE_TYPES.join(",")} required />
-                <FieldDescription>This image will be shown when its before image matches.</FieldDescription>
-              </Field>
+              <ImageFileInput
+                id="afterImage"
+                name="afterImage"
+                label="After image"
+                description="This image will be shown when its before image matches."
+              />
             </div>
 
             <Field>

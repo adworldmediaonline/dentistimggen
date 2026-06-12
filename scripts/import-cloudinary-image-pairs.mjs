@@ -45,7 +45,9 @@ const geminiEmbeddingResponseSchema = z
       )
       .optional(),
   })
-  .transform((value) => value.embedding?.values ?? value.embeddings?.[0]?.values)
+  .transform(
+    (value) => value.embedding?.values ?? value.embeddings?.[0]?.values,
+  )
   .pipe(z.array(z.number()).length(EMBEDDING_DIMENSION));
 
 const imageResponseSchema = z.object({
@@ -55,6 +57,42 @@ const imageResponseSchema = z.object({
 });
 
 let geminiClient = null;
+
+/**
+ * Retry a function with exponential backoff.
+ * @param {() => Promise<T>} fn
+ * @param {{ retries?: number; baseDelayMs?: number; label?: string }} [opts]
+ * @returns {Promise<T>}
+ */
+async function withRetry(
+  fn,
+  { retries = 4, baseDelayMs = 1500, label = "operation" } = {},
+) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const isRetryable =
+        err?.cause?.code === "ECONNRESET" ||
+        err?.cause?.code === "ECONNREFUSED" ||
+        err?.cause?.code === "ETIMEDOUT" ||
+        err?.status === 429 ||
+        err?.status >= 500;
+
+      if (!isRetryable || attempt === retries) {
+        throw err;
+      }
+
+      const delayMs = baseDelayMs * 2 ** attempt + Math.random() * 500;
+      console.warn(
+        `[retry] ${label} failed (attempt ${attempt + 1}/${retries}): ${
+          err?.cause?.code ?? err?.message
+        }. Retrying in ${Math.round(delayMs)}ms…`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+}
 
 function requiredEnv(name) {
   const value = process.env[name];
@@ -150,38 +188,55 @@ async function listCloudinaryResources(folder) {
 }
 
 async function downloadImage(resource) {
-  const response = await fetch(resource.secure_url);
+  return withRetry(
+    async () => {
+      const response = await fetch(resource.secure_url);
 
-  if (!response.ok) {
-    throw new Error(`Failed to download ${resource.public_id}: ${response.status}`);
-  }
+      if (!response.ok) {
+        const err = new Error(
+          `Failed to download ${resource.public_id}: ${response.status}`,
+        );
+        err.status = response.status;
+        throw err;
+      }
 
-  const buffer = Buffer.from(await response.arrayBuffer());
+      const buffer = Buffer.from(await response.arrayBuffer());
 
-  return imageResponseSchema.parse({
-    buffer,
-    mimeType: getMimeType(resource),
-    byteSize: buffer.length,
-  });
+      return imageResponseSchema.parse({
+        buffer,
+        mimeType: getMimeType(resource),
+        byteSize: buffer.length,
+      });
+    },
+    { label: `downloadImage(${resource.public_id})` },
+  );
 }
 
 async function generateGeminiEmbedding(image) {
-  const response = await getGeminiClient().models.embedContent({
-    model: EMBEDDING_MODEL,
-    contents: [
-      {
-        inlineData: {
-          mimeType: image.mimeType,
-          data: image.buffer.toString("base64"),
+  return withRetry(
+    async () => {
+      const response = await getGeminiClient().models.embedContent({
+        model: EMBEDDING_MODEL,
+        contents: [
+          {
+            inlineData: {
+              mimeType: image.mimeType,
+              data: image.buffer.toString("base64"),
+            },
+          },
+        ],
+        config: {
+          outputDimensionality: EMBEDDING_DIMENSION,
         },
-      },
-    ],
-    config: {
-      outputDimensionality: EMBEDDING_DIMENSION,
-    },
-  });
+      });
 
-  return geminiEmbeddingResponseSchema.parse(response);
+      return geminiEmbeddingResponseSchema.parse(response);
+    },
+    {
+      label: `generateGeminiEmbedding(${image.mimeType}, ${image.byteSize}B)`,
+      baseDelayMs: 2000,
+    },
+  );
 }
 
 function toPgVector(vector) {
@@ -189,7 +244,8 @@ function toPgVector(vector) {
 }
 
 async function getImportUserId(pool) {
-  const preferredEmail = process.env.IMPORT_ADMIN_EMAIL ?? process.env.TEST_ADMIN_EMAIL;
+  const preferredEmail =
+    process.env.IMPORT_ADMIN_EMAIL ?? process.env.TEST_ADMIN_EMAIL;
 
   if (preferredEmail) {
     const byEmail = await pool.query(
@@ -216,7 +272,10 @@ async function getImportUserId(pool) {
   );
 }
 
-async function upsertPair(pool, { pair, createdById, before, after, beforeEmbedding, afterEmbedding }) {
+async function upsertPair(
+  pool,
+  { pair, createdById, before, after, beforeEmbedding, afterEmbedding },
+) {
   await pool.query("begin");
 
   try {
@@ -252,13 +311,25 @@ async function upsertPair(pool, { pair, createdById, before, after, beforeEmbedd
     );
 
     const assets = [
-      { kind: "before", resource: pair.before, image: before, embedding: beforeEmbedding },
-      { kind: "after", resource: pair.after, image: after, embedding: afterEmbedding },
+      {
+        kind: "before",
+        resource: pair.before,
+        image: before,
+        embedding: beforeEmbedding,
+      },
+      {
+        kind: "after",
+        resource: pair.after,
+        image: after,
+        embedding: afterEmbedding,
+      },
     ];
 
     for (const asset of assets) {
       const assetId = generateId();
-      const checksum = createHash("sha256").update(asset.image.buffer).digest("hex");
+      const checksum = createHash("sha256")
+        .update(asset.image.buffer)
+        .digest("hex");
 
       const assetResult = await pool.query(
         `
@@ -360,7 +431,9 @@ cloudinary.config({
 });
 
 const folder = process.env.CLOUDINARY_FOLDER ?? "dentist-image-reco";
-const limit = process.argv[2] ? Number(process.argv[2]) : Number.POSITIVE_INFINITY;
+const limit = process.argv[2]
+  ? Number(process.argv[2])
+  : Number.POSITIVE_INFINITY;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 try {
@@ -368,22 +441,24 @@ try {
   const resources = await listCloudinaryResources(folder);
   const pairs = groupCloudinaryPairs(resources, folder).slice(0, limit);
 
-  console.log(`Found ${pairs.length} complete Cloudinary pair(s) in ${folder}.`);
+  console.log(
+    `Found ${pairs.length} complete Cloudinary pair(s) in ${folder}.`,
+  );
 
   let imported = 0;
 
   for (const pair of pairs) {
     console.log(`Importing ${pair.pairId}...`);
 
+    // Download both images concurrently (CDN, safe to parallelise).
     const [before, after] = await Promise.all([
       downloadImage(pair.before),
       downloadImage(pair.after),
     ]);
 
-    const [beforeEmbedding, afterEmbedding] = await Promise.all([
-      generateGeminiEmbedding(before),
-      generateGeminiEmbedding(after),
-    ]);
+    // Generate embeddings sequentially to avoid Gemini rate-limit resets.
+    const beforeEmbedding = await generateGeminiEmbedding(before);
+    const afterEmbedding = await generateGeminiEmbedding(after);
 
     await upsertPair(pool, {
       pair,
@@ -398,7 +473,9 @@ try {
     console.log(`Imported ${pair.pairId}.`);
   }
 
-  console.log(JSON.stringify({ imported, totalAvailable: pairs.length }, null, 2));
+  console.log(
+    JSON.stringify({ imported, totalAvailable: pairs.length }, null, 2),
+  );
 } finally {
   await pool.end();
 }

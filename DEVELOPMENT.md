@@ -279,7 +279,7 @@ There is no test script configured yet. Use lint and production build as the cur
 
 1. Pull latest code.
 2. Run `corepack pnpm install`.
-3. Ensure `.env.local` has the required variables.
+3. Ensure `.env` has the required variables.
 4. Run `corepack pnpm db:migrate`.
 5. Run `corepack pnpm db:generate` if the schema changed.
 6. Run `corepack pnpm dev`.
