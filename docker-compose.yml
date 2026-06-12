@@ -1,0 +1,64 @@
+services:
+  postgresql:
+    image: postgres:17.5
+    restart: unless-stopped
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - db-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "2GB"
+        reservations:
+          cpus: "1"
+          memory: "1GB"
+
+  postgresql-backup:
+    image: postgres:17.5
+    container_name: postgresql-backup
+    restart: unless-stopped
+    volumes:
+      - postgresql_backup:/backups
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    command: >
+      sh -c "while true; do
+        pg_dump -h postgresql -U ${POSTGRES_USER} -F c -b -v -f /backups/postgresql-$(date +%F).dump;
+        find /backups -type f -name '*.dump' -mtime +14 -exec rm {} \;
+        sleep 86400;
+      done"
+    depends_on:
+      - postgresql
+    networks:
+      - db-network
+
+  adminer:
+    image: adminer:4.8.0
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    networks:
+      - db-network
+
+volumes:
+  postgresql_data:
+  postgresql_backup:
+
+networks:
+  db-network:
+    driver: bridge

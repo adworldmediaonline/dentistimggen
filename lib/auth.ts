@@ -1,31 +1,34 @@
-import { betterAuth } from "better-auth"
-import { prismaAdapter } from "better-auth/adapters/prisma"
-import { nextCookies } from "better-auth/next-js"
-import { admin } from "better-auth/plugins/admin"
-import { emailOTP } from "better-auth/plugins/email-otp"
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { nextCookies } from "better-auth/next-js";
+import { admin } from "better-auth/plugins/admin";
+import { emailOTP } from "better-auth/plugins/email-otp";
+import { count, eq } from "drizzle-orm";
 
-import { prisma } from "@/lib/prisma"
-
-// Local-dev bypass: skip Resend/email verification entirely.
-// Set DISABLE_EMAIL_VERIFICATION=true in .env.local to enable.
-const disableEmailVerification = process.env.DISABLE_EMAIL_VERIFICATION === "true"
+import * as schema from "@/db/schema";
+import { db } from "@/lib/db";
+import { storeAuthOtp } from "@/lib/dev-auth-otp";
 
 const trustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",")
   .map((origin) => origin.trim())
-  .filter(Boolean)
+  .filter(Boolean);
 
-const googleClientId = process.env.GOOGLE_CLIENT_ID
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+const isProd = process.env.NODE_ENV === "production";
 
 export const auth = betterAuth({
   appName: "Dentist Image Reco",
-  database: prismaAdapter(prisma, {
-    provider: "postgresql",
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema,
+    camelCase: true,
   }),
   trustedOrigins,
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: !disableEmailVerification,
+    requireEmailVerification: true,
     minPasswordLength: 8,
     maxPasswordLength: 256,
     revokeSessionsOnPasswordReset: true,
@@ -45,11 +48,11 @@ export const auth = betterAuth({
     customRules: {
       "/api/auth/sign-in/email": {
         window: 60,
-        max: 5,
+        max: isProd ? 5 : 100,
       },
       "/api/auth/sign-up/email": {
         window: 60,
-        max: 3,
+        max: isProd ? 5 : 100,
       },
       "/api/auth/email-otp/send-verification-otp": {
         window: 60,
@@ -73,21 +76,20 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          const usersCount = await prisma.user.count()
-          const data: { role?: string; emailVerified?: boolean } = {}
+          const [{ value: usersCount }] = await db
+            .select({ value: count() })
+            .from(schema.user);
+          const data: { role?: string } = {};
 
           if (usersCount === 1) {
-            data.role = "admin"
-          }
-
-          // Local-dev bypass: mark every new user verified so the
-          // dashboard's emailVerified gate passes without Resend.
-          if (disableEmailVerification) {
-            data.emailVerified = true
+            data.role = "admin";
           }
 
           if (Object.keys(data).length > 0) {
-            await prisma.user.update({ where: { id: user.id }, data })
+            await db
+              .update(schema.user)
+              .set(data)
+              .where(eq(schema.user.id, user.id));
           }
         },
       },
@@ -106,24 +108,23 @@ export const auth = betterAuth({
     }),
     emailOTP({
       overrideDefaultEmailVerification: true,
-      sendVerificationOnSignUp: !disableEmailVerification,
+      sendVerificationOnSignUp: true,
       expiresIn: 60 * 10,
       allowedAttempts: 5,
-      resendStrategy: "reuse",
+      resendStrategy: "rotate",
       storeOTP: "encrypted",
       async sendVerificationOTP({ email, otp, type }) {
-        if (disableEmailVerification) {
-          // No email service in local-dev mode — print the code to the server log.
-          console.log(`[auth-otp] ${type} code for ${email}: ${otp}`)
-          return
-        }
-        const { sendAuthOtpEmail } = await import("@/lib/email")
-        await sendAuthOtpEmail({ email, otp, type })
+        storeAuthOtp({
+          email,
+          otp,
+          type,
+          expiresInSeconds: 60 * 10,
+        });
       },
     }),
     nextCookies(),
   ],
-})
+});
 
-export type AuthSession = typeof auth.$Infer.Session
-export type AuthUser = AuthSession["user"]
+export type AuthSession = typeof auth.$Infer.Session;
+export type AuthUser = AuthSession["user"];
