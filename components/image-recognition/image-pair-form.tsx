@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useEffect, useRef } from "react"
+import { useActionState, useEffect, useRef, useState } from "react"
 import { UploadCloudIcon } from "lucide-react"
 
 import { ImageFileInput } from "@/components/image-recognition/image-file-input"
@@ -31,12 +31,29 @@ const initialState: ActionResult = {
 export function ImagePairForm() {
   const formRef = useRef<HTMLFormElement>(null)
   const [state, formAction] = useActionState(createImagePair, initialState)
+  const [beforeFiles, setBeforeFiles] = useState<File[]>([])
+  const [afterFiles, setAfterFiles] = useState<File[]>([])
+  const [formKey, setFormKey] = useState(0)
 
   useEffect(() => {
     if (state.ok) {
       formRef.current?.reset()
+      setBeforeFiles([])
+      setAfterFiles([])
+      setFormKey((prev) => prev + 1)
     }
   }, [state.ok])
+
+  const fileCountError =
+    beforeFiles.length > 0 && afterFiles.length > 0 && beforeFiles.length !== afterFiles.length
+      ? `Mismatched counts: you selected ${beforeFiles.length} before images but ${afterFiles.length} after images. They must match exactly.`
+      : null
+
+  const isSubmitDisabled =
+    beforeFiles.length === 0 ||
+    afterFiles.length === 0 ||
+    beforeFiles.length !== afterFiles.length ||
+    beforeFiles.length > 8
 
   return (
     <Card>
@@ -46,9 +63,9 @@ export function ImagePairForm() {
             <UploadCloudIcon className="size-5" />
           </div>
           <div>
-            <CardTitle>Upload image pair</CardTitle>
+            <CardTitle>Upload image pairs</CardTitle>
             <CardDescription>
-              Store a before image, its matching after image, and index the before image for matching.
+              Store before images, their matching after images, and index the before images for matching.
             </CardDescription>
           </div>
         </div>
@@ -73,17 +90,24 @@ export function ImagePairForm() {
 
             <div className="grid gap-5 md:grid-cols-2">
               <ImageFileInput
+                key={`before-${formKey}`}
                 id="beforeImage"
                 name="beforeImage"
-                label="Before image"
-                description="JPEG, PNG, or WebP up to 10 MB."
+                label="Before images"
+                description="JPEG, PNG, or WebP up to 10 MB. Max 8."
+                multiple
+                onChange={(files) => setBeforeFiles(Array.isArray(files) ? files : files ? [files] : [])}
               />
 
               <ImageFileInput
+                key={`after-${formKey}`}
                 id="afterImage"
                 name="afterImage"
-                label="After image"
-                description="This image will be shown when its before image matches."
+                label="After images"
+                description="Must have exactly the same number of after images as before images."
+                multiple
+                error={fileCountError}
+                onChange={(files) => setAfterFiles(Array.isArray(files) ? files : files ? [files] : [])}
               />
             </div>
 
@@ -98,7 +122,9 @@ export function ImagePairForm() {
               <Textarea id="notes" name="notes" placeholder="Treatment details, camera angle, or case notes." rows={4} />
             </Field>
 
-            <SubmitButton pendingLabel="Uploading and indexing...">Upload pair</SubmitButton>
+            <SubmitButton pendingLabel="Uploading and indexing..." disabled={isSubmitDisabled}>
+              Upload pairs
+            </SubmitButton>
           </FieldGroup>
         </form>
       </CardContent>
